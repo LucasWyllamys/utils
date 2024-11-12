@@ -1,0 +1,19 @@
+// fnDiasUteisEntreDuasDatas
+// Calcular dias úteis entre duas datas.
+(
+    DataInicio as date,
+    DataFim as date,
+    optional ListaFeriados as list
+) as number =>
+let
+    ListFeriados = if ListaFeriados = null then {} else ListaFeriados,
+    // cria uma lista de datas que começa em DataInicio e termina em DataFim.
+        // Duration.Days(DataFim - DataInicio) + 1: Calcula a duração em dias entre DataInicio e DataFim, adicionando 1 para incluir ambos os dias.
+        // #duration(1,0,0,0): Define o incremento de um dia para a lista de datas.
+    ListaDatas = List.Dates(DataInicio, Duration.Days(DataFim - DataInicio) + 1, #duration(1,0,0,0)),
+    // Filtra apenas os dias úteis (segunda a sexta) e que não sejam feriados
+        // Date.DayOfWeek(_, Day.Monday) < 5: Verifica se o dia da semana é de segunda a sexta.
+        // List.Contains(Feriados, _) = false: Verifica se a data não está na lista de feriados.
+    ListaDatasUteis = List.Select(ListaDatas, each Date.DayOfWeek(_, Day.Monday) < 5 and List.Contains(ListFeriados, _) = false)
+in
+    List.Count(ListaDatasUteis) - 1

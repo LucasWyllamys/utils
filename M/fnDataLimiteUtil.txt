@@ -1,0 +1,20 @@
+// Função para calcular a data limite útil considerando feriados
+(
+    DataInicio as date,
+    DiasUteis as number,
+    optional ListaFeriados as list
+) as date =>
+let
+    ListFeriados = if ListaFeriados = null then {} else ListaFeriados,
+    // Esta linha cria uma lista de datas que começa em DataInicio + 1 e termina em DataFim = DataInicio + (DiasUteis * 4).
+    ListaDatas = List.Dates(Date.AddDays(DataInicio, 1), DiasUteis * 4, #duration(1,0,0,0)),   
+    // Filtra apenas os dias úteis (segunda a sexta) e que não sejam feriados
+        // Date.DayOfWeek(_, Day.Monday) < 5: Verifica se o dia da semana é de segunda a sexta.
+        // List.Contains(Feriados, _) = false: Verifica se a data não está na lista de feriados.
+    ListaDiasUteis = List.Select(ListaDatas, each Date.DayOfWeek(_, Day.Monday) < 5 and List.Contains(ListFeriados, _) = false),   
+    // Pega a data na posição correspondente ao número de dias úteis
+        // List.FirstN(DiasUteisLista, DiasUteis): Pega os primeiros DiasUteis dias úteis da lista.
+        // {DiasUteis - 1}: Seleciona a data na posição DiasUteis - 1 (porque a contagem começa em 0).
+    DataLimite = List.FirstN(ListaDiasUteis, DiasUteis){DiasUteis - 1} 
+in
+    DataLimite
