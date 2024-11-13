@@ -32,7 +32,7 @@ Public Function ConsultaAPI(url As String, criterio As String) As Scripting.Dict
     ' Esta função retorna um dicionário.
     ' Use um dicionário para armazenar o retorno desta função.
     
-    Dim request As New WinHttpRequest, dictResponse As Object
+    Dim request As New WinHttpRequest, dictResponse As Scripting.Dictionary
     Dim responseJSON As String
     
     Set dictResponse = CreateObject("Scripting.Dictionary")
