@@ -9,11 +9,8 @@ Option Explicit
 Public Function ConsultaAPI(url As String, criterio As String) As Scripting.Dictionary
     ' Esta função retorna um dicionário.
     ' Use um dicionário para armazenar o retorno desta função.
-    
-    Dim request As New WinHttpRequest, dictResponse As Scripting.Dictionary
+    Dim request As New WinHttpRequest, dictResponse As New Scripting.Dictionary
     Dim responseJSON As String
-    
-    Set dictResponse = CreateObject("Scripting.Dictionary")
     
     'request.SetProxy 2, "10.219.78.3:8080", ""                                      ' Servidor padrão do proxy
     url = url & "/" & criterio
@@ -34,9 +31,6 @@ Public Function ConsultaAPI(url As String, criterio As String) As Scripting.Dict
     Else
         MsgBox "Erro na requisição: " & request.status
     End If
-    
-    Set request = Nothing
-    Set dictResponse = Nothing
 End Function
 
 Public Function ConsultaAPICNPJ(cnpj As String) As Scripting.Dictionary
