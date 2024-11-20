@@ -81,11 +81,19 @@ Public Function DesconectarDB()
     End If
 End Function
 
-Public Function InserirRegistro(tabela As String)
+Public Function InserirRegistro(tabela As String, dictRegistro As Scripting.Dictionary)
     Call DesconectarRS
+    
     Set rs = New ADODB.recordSet
     rs.Open tabela, conexaoDB, adOpenKeyset, adLockOptimistic   ' (tabela, conexão ativa, tipo de cursor, tipo de bloqueio). Abre a conexão com a RecordSet.
     rs.AddNew                                                   ' Adiciona um novo registro à RecordSet
+    
+    Dim campo As Variant
+    For Each campo In dictRegistro
+        rs(campo) = dictRegistro(campo)
+    Next campo
+    
+    Call UpdateRS
 End Function
 
 Public Function ConsultarRegistro(sql As String, Optional planilha As Worksheet, Optional celula As String) As Boolean

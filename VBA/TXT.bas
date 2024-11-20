@@ -1,28 +1,6 @@
 Attribute VB_Name = "Testes"
 Option Explicit
 
-Public Function printDicionario(dict As Scripting.Dictionary)
-    Dim chv1 As Variant, chv2 As Variant, chv3 As Variant
-    Debug.Print "{"
-    For Each chv1 In dict.Keys
-        If chv1 <> Empty Then
-            Debug.Print "   """ & chv1 & """: {"
-            For Each chv2 In dict(chv1).Keys
-                If Not IsObject(dict(chv1)(chv2)) Then  ' Verifica se tem um dicionário aninhado
-                    Debug.Print "       """ & chv2 & """: " & """" & dict(chv1)(chv2) & ""","
-                Else
-                    Debug.Print "       """ & chv2 & """: {"
-                    For Each chv3 In dict(chv1)(chv2).Keys
-                        Debug.Print "           """ & chv3 & """: " & """" & dict(chv1)(chv2)(chv3) & ""","
-                    Next chv3
-                    Debug.Print "       },"
-                End If
-            Next chv2
-        End If
-    Next chv1
-    ' Call ModificarArquivoTXT(ThisWorkbook.Path & "\log.txt", texto)
-End Function
-
 Public Function CriarArquivoTXT()
     Dim caminhoArquivo As String, arquivo As Integer, texto As String
     
