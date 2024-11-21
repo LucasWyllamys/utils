@@ -1,4 +1,4 @@
-Attribute VB_Name = "Testes"
+Attribute VB_Name = "TXT"
 Option Explicit
 
 Public Function CriarArquivoTXT()

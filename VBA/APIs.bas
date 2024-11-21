@@ -22,7 +22,7 @@ Public Function ConsultaAPI(url As String, criterio As String) As Scripting.Dict
     If request.status = 200 Then
         responseJSON = request.responseText
         If responseJSON <> "[]" Then
-            responseJSON = Utilidades.LerRespostaComoUTF8(request)                  ' Converte a requisição em UTF-8
+            responseJSON = Utils.LerRespostaComoUTF8(request)                  ' Converte a requisição em UTF-8
             Set dictResponse = JsonConverter.ParseJson(responseJSON)                ' Converte o JSON em dicionário
             Set ConsultaAPI = dictResponse
         Else
@@ -41,7 +41,7 @@ Public Function ConsultaAPICNPJ(cnpj As String) As Scripting.Dictionary
     Set ConsultaAPICNPJ = ConsultaAPI(url, cnpj)
 End Function
 
-Public Function ConsultaAPICPF(cpf As String, dataNascimento As Date) As Scripting.Dictionary
+Public Function ConsultaAPICPF(cpf As String, dataNascimento As String) As Scripting.Dictionary
     Dim url As String, token As String
     
     token = "AceldjFJujoDwoB0O16bw4GY1kgaidWuvqaRnrWc"

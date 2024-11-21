@@ -45,6 +45,6 @@ Public Function MsgArquivoNaoEncontrado() As Integer
     MsgArquivoNaoEncontrado = MsgBox("O arquivo não foi encontrado ou você não tem acesso!", vbExclamation)
 End Function
 
-Public Function MsgValidacaoTiposCampos() As Integer
-    MsgValidacaoTiposCampos = MsgBox("Há inconsistências no(s) tipo(s) de dado(s)!", vbExclamation)
+Public Function MsgValidacaoDados() As Integer
+    MsgValidacaoTiposCampos = MsgBox("Há inconsistência de dados!", vbExclamation)
 End Function

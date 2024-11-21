@@ -104,7 +104,7 @@ Public Function ConsultarRegistro(sql As String, Optional planilha As Worksheet,
         ConsultarRegistro = False
     Else
         ConsultarRegistro = True
-        If Not planilha Is Nothing And celula = "" Then
+        If Not planilha Is Nothing And celula <> "" Then
             planilha.Range(celula).CopyFromRecordset rs
         End If
     End If
