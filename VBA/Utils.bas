@@ -82,28 +82,41 @@ Public Function CriarPasta(caminhoPasta As String) As String
     End If
 End Function
 
-Public Function printDicionario(dicionario As Scripting.Dictionary, caminhoArquivoTXT As String)
+Public Function PrintDicionario(dicionario As Scripting.Dictionary, caminhoArquivoTXT As String)
     ' Imprime o dicionário especificado no formato JSON no arquivo txt informado.
     Dim chv1 As Variant, chv2 As Variant, chv3 As Variant
     Debug.Print "{"
     For Each chv1 In dicionario.Keys
         If chv1 <> Empty Then
-            Debug.Print "   """ & chv1 & """: {"
-            For Each chv2 In dicionario(chv1).Keys
-                If Not IsObject(dicionario(chv1)(chv2)) Then  ' Verifica se tem um dicionário aninhado
-                    Debug.Print "       """ & chv2 & """: " & """" & dicionario(chv1)(chv2) & ""","
-                Else
-                    Debug.Print "       """ & chv2 & """: {"
-                    For Each chv3 In dicionario(chv1)(chv2).Keys
-                        Debug.Print "           """ & chv3 & """: " & """" & dicionario(chv1)(chv2)(chv3) & ""","
-                    Next chv3
-                    Debug.Print "       },"
-                End If
-            Next chv2
+            Debug.Print "   """ & chv1 & """: """ & dicionario(chv1) & ""","
         End If
     Next chv1
+    Debug.Print "}"
     ' Call ModificarArquivoTXT(caminhoArquivoTXT, texto)
 End Function
+
+'Public Function PrintDicionario(dicionario As Scripting.Dictionary, caminhoArquivoTXT As String)
+'    ' Imprime o dicionário especificado no formato JSON no arquivo txt informado.
+'    Dim chv1 As Variant, chv2 As Variant, chv3 As Variant
+'    Debug.Print "{"
+'    For Each chv1 In dicionario.Keys
+'        If chv1 <> Empty Then
+'            Debug.Print "   """ & chv1 & """: {"
+'            For Each chv2 In dicionario(chv1).Keys
+'                If Not IsObject(dicionario(chv1)(chv2)) Then  ' Verifica se tem um dicionário aninhado
+'                    Debug.Print "       """ & chv2 & """: " & """" & dicionario(chv1)(chv2) & ""","
+'                Else
+'                    Debug.Print "       """ & chv2 & """: {"
+'                    For Each chv3 In dicionario(chv1)(chv2).Keys
+'                        Debug.Print "           """ & chv3 & """: " & """" & dicionario(chv1)(chv2)(chv3) & ""","
+'                    Next chv3
+'                    Debug.Print "       },"
+'                End If
+'            Next chv2
+'        End If
+'    Next chv1
+'    ' Call ModificarArquivoTXT(caminhoArquivoTXT, texto)
+'End Function
 
 Public Function OcultarFerramentasExcel1()
     Application.DisplayFullScreen = True
