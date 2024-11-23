@@ -37,7 +37,7 @@ Public Function LerArquivoTXT(caminhoArquivo As String) As String   ' Retorna o 
     LerArquivoTXT = texto
 End Function
 
-Public Function ModificarArquivoTXT(caminhoArquivo As String, texto As String)
+Public Function EscreverArquivoTXT(caminhoArquivo As String, texto As String)
     Dim Arquivo As Integer
     
     Arquivo = FreeFile                              ' Retorna um número de arquivo livre

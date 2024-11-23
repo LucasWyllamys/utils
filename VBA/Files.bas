@@ -14,7 +14,7 @@ Public Function AbrirArquivo(caminhoArquivo As String)
     Shell "explorer.exe """ & caminhoArquivo & """"
 End Function
 
-Public Function FileName() As String
+Public Function PegarCaminhoArquivo() As String
     ' Exibe o diálogo de seleção de arquivo. Pega o hiperlink do arquivo selecionado.
     Dim caminho_arquivo As String
     With Application.FileDialog(msoFileDialogFilePicker)
@@ -24,7 +24,7 @@ Public Function FileName() As String
         .AllowMultiSelect = False                    ' Definir como True se desejar permitir a seleção de vários arquivos
 
         If .Show = -1 Then                           ' Verifica se o usuário clicou em "Abrir"
-            FileName = .SelectedItems(1)             ' Obtem o caminho do arquivo selecionado
+            PegarCaminhoArquivo = .SelectedItems(1)             ' Obtem o caminho do arquivo selecionado
         End If
     End With
 End Function
