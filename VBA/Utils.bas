@@ -103,11 +103,11 @@ Public Function FormatJson(json As String) As String
     FormatJson = formattedJson
 End Function
 
-Public Function printDicionario(dicionario As Scripting.Dictionary, caminhoArquivoTXT As String)
+Public Function PrintDicionario(dicionario As Scripting.Dictionary, caminhoArquivoTXT As String)
     ' Esta função imprime um dicionário, no formato JSON, em um arquivo TXT.
     Dim jsonStr As String
     
-    jsonStr = jsonConverter.ConvertToJson(dicionario)           ' Converte o dicionário para json.
+    jsonStr = JsonConverter.ConvertToJson(dicionario)           ' Converte o dicionário para json.
     jsonStr = Utils.DecodeUnicode(jsonStr)                      ' Decodifica os caracteres unicode.
     jsonStr = Utils.FormatJson(jsonStr)                         ' Formata a string para um formato mais legível de JSON.
     
@@ -118,43 +118,51 @@ Public Function printDicionario(dicionario As Scripting.Dictionary, caminhoArqui
     Call TXT.EscreverArquivoTXT(caminhoArquivoTXT, jsonStr)     ' Escreve o dicionário no formato JSON no arquivo TXT.
 End Function
 
-
-Public Function ValidaCamposObrigatorios(campos As Collection) As Boolean
+Public Function ValidaCamposObrigatorios(collCampos As Collection) As Boolean
     ' Esta função recebe uma coleção de valores e avalia se algum está vazio.
     Dim campo As Variant
-    For Each campo In campos
-        If campo = Empty Then
-            ValidaCamposObrigatorios = False
-            Exit For
+    For Each campo In collCampos
+        If TypeName(campo) = "CheckBox" Then
+            If campo.value = False Then
+                ValidaCamposObrigatorios = False
+                Exit For
+            Else
+                ValidaCamposObrigatorios = True
+            End If
         Else
-            ValidaCamposObrigatorios = True
+            If campo = Empty Then
+                ValidaCamposObrigatorios = False
+                Exit For
+            Else
+                ValidaCamposObrigatorios = True
+            End If
         End If
     Next campo
 End Function
 
-Public Function ValidaValor(value As String, tipo As String) As Boolean
+Public Function ValidaValor(valor As String, tipo As String) As Boolean
     ' Esta função valida os tipos de dados de acordo com o tipo informado.
-    value = Trim(Replace(Replace(Replace(value, ".", ""), "-", ""), "/", ""))
+    valor = Trim(Replace(Replace(Replace(valor, ".", ""), "-", ""), "/", ""))
     If tipo = "cpf" Then
-        If Len(value) = 11 Then
+        If Len(valor) = 11 Then
             ValidaValor = True
         Else
             ValidaValor = False
         End If
     ElseIf tipo = "cep" Then
-        If Len(value) = 8 Then
+        If Len(valor) = 8 Then
             ValidaValor = True
         Else
             ValidaValor = False
         End If
     ElseIf tipo = "cnpj" Then
-        If Len(value) = 14 Then
+        If Len(valor) = 14 Then
             ValidaValor = True
         Else
             ValidaValor = False
         End If
     ElseIf tipo = "data" Then
-        If IsDate(value) Then
+        If IsDate(valor) Then
             ValidaValor = True
         Else
             ValidaValor = False
@@ -162,19 +170,19 @@ Public Function ValidaValor(value As String, tipo As String) As Boolean
     End If
 End Function
 
-Public Function FormataValor(value As String, tipo As String) As String
+Public Function FormataValor(valor As String, tipo As String) As String
     ' Esta função formata os dados de acordo com o tipo informado.
     If tipo = "cpf" Then
-        FormataValor = Format(value, "000\.000\.000\-00")
+        FormataValor = Format(valor, "000\.000\.000\-00")
     ElseIf tipo = "cep" Then
-        FormataValor = Format(value, "00\.000\-000")
+        FormataValor = Format(valor, "00\.000\-000")
     ElseIf tipo = "cnpj" Then
-        FormataValor = Format(value, "00\.000\.000/0000\-00")
+        FormataValor = Format(valor, "00\.000\.000/0000\-00")
     End If
 End Function
 
-Public Function LimparFormatacao(value As String) As String
-    LimparFormatacao = Trim(Replace(Replace(Replace(value, ".", ""), "-", ""), "/", ""))
+Public Function LimparFormatacao(valor As String) As String
+    LimparFormatacao = Trim(Replace(Replace(Replace(valor, ".", ""), "-", ""), "/", ""))
 End Function
 
 Public Function AbrirSite(url As String)
