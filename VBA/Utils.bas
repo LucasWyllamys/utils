@@ -194,14 +194,6 @@ Public Function GetUsuario() As String
     ' GetUsuario = CreateObject("WScript.Network").UserName
 End Function
 
-Public Function CriarPasta(caminhoPasta As String) As String
-    Dim objPasta As Object
-    Set objPasta = CreateObject("Scripting.FileSystemObject")   ' Cria o objeto no Windows.
-    If Not objPasta.FolderExists(caminhoPasta) Then             ' Verifica se a pasta não existe
-        Set objPasta = objPasta.CreateFolder(caminhoPasta)      ' Cria a pasta caso não exista
-    End If
-End Function
-
 Public Function OcultarFerramentasExcel1()
     Application.DisplayFullScreen = True
     Application.ActiveWindow.DisplayWorkbookTabs = False
@@ -238,6 +230,6 @@ Public Function LinhaVazia(planilha As Worksheet, colunaRef As String) As Long
     LinhaVazia = planilha.Cells(Rows.Count, colunaRef).End(xlUp).Row + 1
 End Function
 
-Public Function ultimaLinha(planilha As Worksheet, colunaRef As String) As Long
-    ultimaLinha = planilha.Cells(Rows.Count, colunaRef).End(xlUp).Row
+Public Function UltimaLinha(planilha As Worksheet, colunaRef As String) As Long
+    UltimaLinha = planilha.Cells(Rows.Count, colunaRef).End(xlUp).Row
 End Function
