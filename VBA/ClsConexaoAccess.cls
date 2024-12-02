@@ -42,7 +42,7 @@ Private Property Set conexaoDB(obj As ADODB.Connection)
     Set self.conexaoDB = obj
 End Property
 
-Private Property Get rs() As ADODB.Recordset
+Public Property Get rs() As ADODB.Recordset
     Set rs = self.rs
 End Property
 
@@ -82,10 +82,11 @@ Public Function DesconectarRS()
 End Function
 
 Public Function InserirRegistro(tabela As String, dictRegistro As Scripting.Dictionary)
+    Dim campo As Variant
+    
     rs.Open tabela, conexaoDB, adOpenKeyset, adLockOptimistic   ' (tabela, conexão ativa, tipo de cursor, tipo de bloqueio). Abre a conexão com a RecordSet.
     rs.AddNew                                                   ' Adiciona um novo registro à RecordSet
-    
-    Dim campo As Variant
+
     For Each campo In dictRegistro
         rs(campo) = dictRegistro(campo)
     Next campo
@@ -118,8 +119,17 @@ Public Function DBParaForm(dictRegistro As Scripting.Dictionary, pageForm As MSF
     Next campoDB
 End Function
 
-Public Function EditarRegistro(sql As String)
+Public Function EditarRegistro(tabela As String, dictRegistro As Scripting.Dictionary)
+    Dim sql As String, campo As Variant
+    
+    sql = "SELECT * FROM " & tabela & " WHERE ID =" & dictRegistro("ID")
     rs.Open sql, conexaoDB, adOpenKeyset, adLockOptimistic  ' (tabela, conexão ativa, tipo de cursor, tipo de bloqueio).
+
+    For Each campo In dictRegistro
+        If dictRegistro(campo) <> Empty And campo <> "ID" Then
+            rs(campo) = dictRegistro(campo)
+        End If
+    Next campo
 End Function
 
 Public Function DeletarRegistro(sql As String)

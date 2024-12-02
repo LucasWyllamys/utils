@@ -14,7 +14,7 @@ Public Function MsgConfirmacao() As Integer
 End Function
 
 Public Function MsgCamposObrigatorios() As Integer
-    MsgCamposObrigatorios = MsgBox("Preencha todos os campos obrigatórios!", vbExclamation)
+    MsgCamposObrigatorios = MsgBox("Preencha os campos obrigatórios!", vbExclamation)
 End Function
 
 Public Function MsgUsuarioIncorreto() As Integer
@@ -46,5 +46,5 @@ Public Function MsgArquivoNaoEncontrado() As Integer
 End Function
 
 Public Function MsgValidacaoDados() As Integer
-    MsgValidacaoTiposCampos = MsgBox("Há inconsistência de dados!", vbExclamation)
+    MsgValidacaoDados = MsgBox("Há inconsistência de dados!", vbExclamation)
 End Function

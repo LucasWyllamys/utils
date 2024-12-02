@@ -111,17 +111,17 @@ Public Function PrintDicionario(dicionario As Scripting.Dictionary, caminhoArqui
     jsonStr = Utils.DecodeUnicode(jsonStr)                      ' Decodifica os caracteres unicode.
     jsonStr = Utils.FormatJson(jsonStr)                         ' Formata a string para um formato mais legível de JSON.
     
-    If Not Files.ArquivoExiste(caminhoArquivoTXT) Then          ' Verifica se o arquivo TXT existe.
+    If Not FilesFolders.ArquivoExiste(caminhoArquivoTXT) Then          ' Verifica se o arquivo TXT existe.
         Call TXT.CriarArquivoTXT(caminhoArquivoTXT)             ' Cria um arquivo TXT caso ele não exista.
     End If
     
     Call TXT.EscreverArquivoTXT(caminhoArquivoTXT, jsonStr)     ' Escreve o dicionário no formato JSON no arquivo TXT.
 End Function
 
-Public Function ValidaCamposObrigatorios(collCampos As Collection) As Boolean
+Public Function ValidaCamposObrigatorios(Campos As Collection) As Boolean
     ' Esta função recebe uma coleção de valores e avalia se algum está vazio.
     Dim campo As Variant
-    For Each campo In collCampos
+    For Each campo In Campos
         If TypeName(campo) = "CheckBox" Then
             If campo.value = False Then
                 ValidaCamposObrigatorios = False

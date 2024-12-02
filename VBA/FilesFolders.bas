@@ -37,10 +37,10 @@ Public Function AnexarArquivo(caminhoArquivo As String, caminhoArquivoDestino As
     End If
 End Function
 
-Public Function CriarPasta(collCaminhosPasta As Collection)
-    Dim objPasta As New Scripting.FileSystemObject, caminhoPasta As Variant
-    'Set objPasta = CreateObject("Scripting.FileSystemObject")   ' Cria o objeto no Windows.
-    For Each caminhoPasta In collCaminhosPasta
+Public Function CriarPastas(CaminhosPasta As Collection)
+    Dim objPasta As Object, caminhoPasta As Variant
+    Set objPasta = CreateObject("Scripting.FileSystemObject")       ' Cria o objeto no Windows.
+    For Each caminhoPasta In CaminhosPasta
         If Not objPasta.FolderExists(caminhoPasta) Then             ' Verifica se a pasta não existe
             Set objPasta = objPasta.CreateFolder(caminhoPasta)      ' Cria a pasta caso não exista
         End If
