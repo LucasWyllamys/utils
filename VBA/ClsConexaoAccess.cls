@@ -30,8 +30,8 @@ Private Property Get caminhoDB() As String
     caminhoDB = self.caminhoDB
 End Property
 
-Private Property Let caminhoDB(value As String)
-    self.caminhoDB = value
+Private Property Let caminhoDB(valor As String)
+    self.caminhoDB = valor
 End Property
 
 Private Property Get conexaoDB() As ADODB.Connection
