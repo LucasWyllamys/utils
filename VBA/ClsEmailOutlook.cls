@@ -9,8 +9,94 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
-' Esta classe tem por objetivo enviar e-mails pelo servidor do Outlook utilizando ou não um template HTML.
-' ATENÇÃO: Necessário habilitar a biblioteca "Microsoft Outlook 16.0 Object Library"
+'==========================================================================================
+' Classe VBA: clsEmailOutlook - Envio de E-mails com Microsoft Outlook
+'==========================================================================================
+'
+' 1. DESCRIÇÃO
+'    Esta classe permite o envio de e-mails utilizando o Microsoft Outlook, com suporte a:
+'      - Corpo do e-mail em HTML (com ou sem template)
+'      - Inclusão de anexos
+'      - Cópia (CC) e cópia oculta (BCC)
+'      - Substituição de variáveis em templates HTML
+'
+' 2. PRÉ-REQUISITOS
+'    - Ativar a biblioteca "Microsoft Outlook 16.0 Object Library" no Editor VBA:
+'        Ferramentas > Referências > Microsoft Outlook 16.0 Object Library
+'    - Ativar a biblioteca "Microsoft Scripting Runtime" no Editor VBA:
+'        Ferramentas > Referências > Microsoft Scripting Runtime
+'
+' 3. ESTRUTURA INTERNA
+'    3.1. A classe utiliza um Type privado chamado ClassType para armazenar os dados do e-mail e objetos do Outlook.
+'    3.2. Propriedades encapsuladas:
+'         - remetente, destinatario, copia, copiaOculta
+'         - assunto, corpoEmail, templateHTML
+'         - anexo1, anexo2
+'         - outApp, outEmail (objetos do Outlook)
+'
+' 4. MÉTODOS PÚBLICOS
+'
+'    4.1. EnviarEmail(...)
+'         - Descrição: Envia um e-mail com os parâmetros fornecidos.
+'         - Parâmetros:
+'             EnviarEmail(paramDe As String, _
+'                         paramPara As String, _
+'                         paramAssunto As String, _
+'                         Optional paramCorpoEmailHTML As String, _
+'                         Optional paramCopia As String, _
+'                         Optional paramCopiaOculta As String, _
+'                         Optional paramCaminhoAnexo1 As String, _
+'                         Optional paramCaminhoAnexo2 As String)
+'         - Comportamento:
+'             - Se templateHTML estiver definido, ele será usado como corpo do e-mail.
+'             - Caso contrário, será usado paramCorpoEmailHTML.
+'             - Se houver assinatura padrão do Outlook, ela será mantida ao final do corpo do e-mail.
+'             - Anexos são adicionados se os caminhos forem informados.
+'             - O e-mail é exibido (.Display) e enviado automaticamente (.Send).
+'
+'    4.2. ImportarTemplateHTML(caminhoArquivoTemplateHTML As String, Optional listaFindReplace As Object) As String
+'         - Descrição: Importa um arquivo HTML como template e realiza substituições de texto.
+'         - Parâmetros:
+'             - caminhoArquivoTemplateHTML: caminho do arquivo .html
+'             - listaFindReplace: Dictionary com pares chave -> valor para substituição no conteúdo
+'         - Retorno:
+'             - Conteúdo HTML final com substituições aplicadas, armazenado em templateHTML.
+'
+' 5. MÉTODO PRIVADO
+'
+'    5.1. SubstituirConteudoArquivoHTML(conteudoHTML As String, Optional listaFindReplace As Object) As String
+'         - Descrição: Realiza substituições no conteúdo HTML.
+'         - Comportamento:
+'             - Ajusta caminhos de imagens para a pasta templateEmail_arquivos
+'             - Substitui variáveis com base no dicionário fornecido
+'
+' 6. COMO CRIAR UM TEMPLATE HTML DO E-MAIL DO OUTLOOK
+'
+'    6.1. Abra o e-mail no Outlook
+'    6.2. Escreva e formate o corpo do e-mail, incluindo variáveis como [NOME], [DATA], etc.
+'    6.3. Clique na guia "Arquivo"
+'    6.4. Clique em "Salvar como"
+'    6.5. Escolha o diretório onde o template será salvo
+'    6.6. Modifique o tipo para: HTML (*.htm, *.html)
+'    6.7. Clique em "Salvar"
+'
+' 7. EXEMPLO DE USO
+'
+'    Dim email As New clsEmailOutlook           ' Instancia o objeto
+'    Dim variaveis As New Scripting.Dictionary  ' Instancia o dicionário
+'
+'    variaveis.Add "[NOME]", "Lucas"            ' Adiciona chave-valor
+'    variaveis.Add "[IDADE]", "29 anos"         ' Adiciona chave-valor
+'
+'    Call email.ImportarTemplateHTML("C:\Templates\templateEmail.html", variaveis)
+'    Call email.EnviarEmail("lucas@empresa.com", "destinatario@exemplo.com", "Assunto do E-mail", , , , "C:\Anexos\arquivo1.pdf")
+'
+' 8. OBSERVAÇÕES
+'
+'    - A assinatura padrão do Outlook é preservada se não for usado um template.
+'    - O método ImportarTemplateHTML é usado separadamente para preparar o corpo do e-mail antes do envio.
+'    - Para anexar múltiplos arquivos, recomenda-se compactá-los em um único .zip.
+'    - A classe pode ser facilmente estendida para suportar mais anexos ou formatos.
 
 Private Type ClassType
     outApp          As New Outlook.Application      'Referência do Outlook
@@ -180,11 +266,14 @@ Public Function ImportarTemplateHTML(caminhoArquivoTemplateHTML As String, Optio
     Close #arquivo
     
     'Armazena conteúdo HTML na propriedade TemplateHTML substituindo os termos informados por meio da função SubstituirConteudoArquivoHTML
-    templateHTML = SubstituirConteudoArquivoHTML(conteudoHTML, listaFindReplace)
+    templateHTML = SubstituirConteudoArquivoHTML(caminhoArquivoTemplateHTML, conteudoHTML, listaFindReplace)
 End Function
 
-Private Function SubstituirConteudoArquivoHTML(conteudoHTML As String, Optional listaFindReplace As Object) As String
-    Dim key As Variant
+Private Function SubstituirConteudoArquivoHTML(caminhoArquivoTemplateHTML As String, conteudoHTML As String, Optional listaFindReplace As Object) As String
+    Dim key As Variant, nomeTemplate As String
+    
+    nomeTemplate = Dir(caminhoArquivoTemplateHTML)
+    nomeTemplate = Replace(Replace(nomeTemplate, ".html", "_arquivos"), ".htm", "_arquivos")
     'default: Altera o caminho dos elementos para a pasta templateEmail_arquivos
     conteudoHTML = Replace(conteudoHTML, "templateEmail_arquivos/", ThisWorkbook.Path & "\templateEmail_arquivos\")
     
