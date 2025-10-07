@@ -11,6 +11,8 @@ Option Explicit
 
 '==========================================================================================
 ' Classe VBA: clsEmailOutlook - Envio de E-mails com Microsoft Outlook
+' Autor: Lucas Wyllamys Carmo da Silva
+' Criado: 06/10/2025
 '==========================================================================================
 '
 ' 1. DESCRIÇÃO
