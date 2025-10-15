@@ -118,7 +118,7 @@ End Type
 
 Private self As ClassType
 
-'Métodos acessores (propriedades):--------------------------------------------------------------------------------------------------------------------
+'Métodos assessores (propriedades):--------------------------------------------------------------------------------------------------------------------
 
 Private Property Get outApp() As Outlook.Application
     Set outApp = self.outApp
