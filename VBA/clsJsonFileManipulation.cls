@@ -11,29 +11,25 @@ Option Explicit
 
 '=========================================== Propriedades ===========================================
 
-Private Type ClassType
-    caminhoArquivo As String
-    objJson As Scripting.Dictionary
-End Type
-
-Private self As ClassType
+Private pCaminhoArquivo As String
+Private pObjJson As Scripting.Dictionary
 
 '=========================================== Métodos Assessores ===========================================
 
 Private Property Get caminhoArquivo() As String
-    caminhoArquivo = self.caminhoArquivo
+    caminhoArquivo = pCaminhoArquivo
 End Property
 
 Private Property Let caminhoArquivo(value As String)
-    self.caminhoArquivo = value
+    pCaminhoArquivo = value
 End Property
 
 Private Property Get objJson() As Scripting.Dictionary
-    Set objJson = self.objJson
+    Set objJson = pObjJson
 End Property
 
 Private Property Set objJson(obj As Scripting.Dictionary)
-    Set self.objJson = obj
+    Set pObjJson = obj
 End Property
 
 '=========================================== Métodos Públicos ===========================================
@@ -63,7 +59,7 @@ Public Sub DefinirValue(chave As String, valor As Variant)
         objJson.Add chave, valor 'Adiciona uma nova chave e valor.
     End If
     
-    Call SalvarJSON
+    SalvarJSON
 End Sub
 
 ' Retorna o valor de uma chave
@@ -93,7 +89,7 @@ End Sub
 ' Limpa todo o arquivo JSON
 Public Sub LimparJSON()
     Set objJson = New Scripting.Dictionary
-    Call SalvarJSON
+    SalvarJSON
 End Sub
 
 '=========================================== Métodos Privados ===========================================
