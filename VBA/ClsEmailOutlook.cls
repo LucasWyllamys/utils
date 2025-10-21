@@ -107,8 +107,8 @@ Option Explicit
 '    Set email = New ClsEmailOutlook ' Instancia o objeto
 '    Set chave_valor = New Scripting.Dictionary ' Instancia o dicionário
 '
-'    chave_valor.Add "#CHAVE1#", "Olá," ' Adiciona chave-valor
-'    chave_valor.Add "#CHAVE2#", "Mundo!" ' Adiciona chave-valor
+'    chave_valor.Add "[CHAVE1]", "Olá," ' Adiciona chave-valor
+'    chave_valor.Add "[CHAVE2]", "Mundo!" ' Adiciona chave-valor
 '
 '    email.ImportarTemplateHTML "C:\Users\U350504\Desktop\Classe de interação com arquivo JSON\Template.htm"
 '    email.SubstituirChavesTemplateHTML chave_valor
@@ -214,7 +214,7 @@ TratarErro:
     Err.Raise ERR_TEMPLATE_NOT_FOUND, "ClsEmailOutlook", "Erro ao importar template HTML: " & Err.Description
 End Sub
 
-Public Sub SubstituirChavesTemplateHTML(Dicionario As Scripting.Dictionary)
+Public Sub SubstituirChavesTemplateHTML(dicionario As Scripting.Dictionary)
     ' Substitui chaves no template HTML por valores do dicionário
     ' Dicionario: objeto Scripting.Dictionary com pares chave-valor
     Dim key As Variant
@@ -223,9 +223,9 @@ Public Sub SubstituirChavesTemplateHTML(Dicionario As Scripting.Dictionary)
     
     Logger.LogInfo "Substituindo chaves no template HTML", 2, 3
     
-    If Not Dicionario Is Nothing Then ' Verifica se o dicionário não está vazio
-        For Each key In Dicionario.Keys   ' Itera sobre todos as chaves do dicionário
-            HTMLTemplate = Replace(HTMLTemplate, key, Dicionario(key)) ' Substitui os valores das respectivas chaves
+    If Not dicionario Is Nothing Then ' Verifica se o dicionário não está vazio
+        For Each key In dicionario.Keys   ' Itera sobre todos as chaves do dicionário
+            HTMLTemplate = Replace(HTMLTemplate, key, dicionario(key)) ' Substitui os valores das respectivas chaves
         Next key
         
         Logger.LogInfo "Substituições concluídas com sucesso", 2, 3
@@ -262,6 +262,7 @@ Public Sub EnviarEmail(remetente As String, destinatario As String, assunto As S
     Set EmailItem = OutlookApp.CreateItem(olMailItem) 'Cria um item de e-mail
     
     With EmailItem
+        .Display 'Exibir e-mail
         .SentOnBehalfOfName = remetente
         .To = destinatario
         If copia <> "" Then .CC = copia
@@ -269,7 +270,6 @@ Public Sub EnviarEmail(remetente As String, destinatario As String, assunto As S
         .Subject = assunto
         
         If HTMLTemplate = "" Then
-            .Display 'Exibir e-mail
             .HTMLBody = corpoEmailHTML & .HTMLBody ' Corpo + Assinatura padrão
         Else
             .HTMLBody = HTMLTemplate
