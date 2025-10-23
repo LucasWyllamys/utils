@@ -24,11 +24,11 @@ Private Property Let caminhoArquivo(value As String)
     pCaminhoArquivo = value
 End Property
 
-Private Property Get objJson() As Scripting.Dictionary
+Public Property Get objJson() As Scripting.Dictionary
     Set objJson = pObjJson
 End Property
 
-Private Property Set objJson(obj As Scripting.Dictionary)
+Public Property Set objJson(obj As Scripting.Dictionary)
     Set pObjJson = obj
 End Property
 
@@ -51,58 +51,30 @@ Public Sub LerJSON(caminhoArquivoJSON As String)
     Set objJson = json ' Armazena na propriedade privada.
 End Sub
 
-' Atualiza um valor de uma chave ou adiciona chave-valor no arquivo JSON
-Public Sub DefinirValue(chave As String, valor As Variant)
-    If objJson.Exists(chave) Then ' Verifica se a chave existe.
-        objJson(chave) = valor ' Atualiza o valor da chave especificada.
-    Else
-        objJson.Add chave, valor 'Adiciona uma nova chave e valor.
-    End If
-    
-    SalvarJSON
-End Sub
-
-' Retorna o valor de uma chave
-Public Function ObterValor(chave As String) As Variant
-    If objJson.Exists(chave) Then ' Verifica se a chave existe.
-        ObterValor = objJson(chave)
-    Else
-        ObterValor = "Chave não encontrada."
-    End If
-End Function
-
-' Retorna a string JSON formatada
-Public Function ObterStringJSON() As String
-    ObterStringJSON = JsonConverter.ConvertToJson(objJson, Whitespace:=4)
-End Function
-
-' Remove uma chave do JSON
-Public Sub RemoverItem(chave As String)
-    If objJson.Exists(chave) Then
-        objJson.Remove chave
-        SalvarJSON
-    Else
-        MsgBox "Chave não encontrada."
-    End If
-End Sub
-
 ' Limpa todo o arquivo JSON
 Public Sub LimparJSON()
     Set objJson = New Scripting.Dictionary
     SalvarJSON
 End Sub
 
-'=========================================== Métodos Privados ===========================================
+' Retorna a string JSON formatada
+Public Function ObterStringJSON() As String
+    ObterStringJSON = JsonConverter.ConvertToJson(objJson, Whitespace:=4)
+End Function
 
-' Salva o objeto JSON no arquivo
-Private Sub SalvarJSON()
-    Dim fso As New FileSystemObject
-    Dim arquivo As TextStream
+' Salva o objeto JSON no arquivo com codificação UTF-8 (acentos preservados)
+Public Sub SalvarJSON()
+    Dim fso As Scripting.FileSystemObject
+    Dim arquivo As Scripting.TextStream
     Dim textoJson As String
     
     textoJson = JsonConverter.ConvertToJson(objJson, Whitespace:=4) ' Converte o objeto em string de JSON.
     
+    Set fso = New Scripting.FileSystemObject
     Set arquivo = fso.CreateTextFile(caminhoArquivo, True)
-    arquivo.Write textoJson ' Escreve o texto JSON no arquivo
-    arquivo.Close ' Fecha o arquivo
+    
+    With arquivo
+        .Write textoJson ' Escreve o texto JSON no arquivo
+        .Close ' Fecha o arquivo
+    End With
 End Sub
