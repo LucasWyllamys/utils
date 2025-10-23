@@ -2,7 +2,7 @@ VERSION 1.0 CLASS
 BEGIN
   MultiUse = -1  'True
 END
-Attribute VB_Name = "ClsLogger"
+Attribute VB_Name = "clsLogger"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
@@ -86,24 +86,22 @@ Option Explicit
 '           - Em caso de erro, lança exceção com código ERR_LOG_WRITE_FAILED.
 '
 ' 6. EXEMPLO DE USO
-'    Dim logger As clsLogger
-'    Set logger = New clsLogger
+'    Dim logger As clsLogger ' Declaração do objeto
+'    Set logger = New clsLogger ' Instanciamento do objeto
 '
-'    ' Definindo caminho personalizado
-'    logger.DefinirCaminhoArquivoLog "C:\Logs\meu_log.log"
+'    logger.DefinirCaminhoArquivoLog "C:\Logs\meu_log.log" ' Define caminho personalizado
 '
-'    logger.LogDebug "Iniciando processo de importação"
-'    logger.LogInfo "Processo concluído com sucesso"
-'    logger.LogWarn "Arquivo de entrada não encontrado, usando padrão"
-'    logger.LogError "Falha ao conectar ao banco de dados"
-'    logger.LogCritical "Erro fatal: sistema será encerrado"
+'    logger.LogDebug "Registra uma mensagem de depuração (diagnóstico técnico)"
+'    logger.LogInfo " Registra uma mensagem informativa (eventos importantes)"
+'    logger.LogWarn "Registra um alerta (possíveis problemas)"
+'    logger.LogError "Registra um erro (falhas que afetam funcionalidades)"
+'    logger.LogCritical "Registra um erro crítico (falhas graves que comprometem o sistema)"
 '
 ' 7. OBSERVAÇÕES
 '   - O arquivo de log é criado automaticamente se não existir.
 '   - O caminho do log deve apontar para um diretório válido.
 '   - A classe pode ser utilizada em qualquer projeto VBA que precise de rastreamento de eventos.
 '   - Ideal para depuração, auditoria e monitoramento de processos automatizados.
-
 
 '============================================ Constantes de Erro ============================================
 
