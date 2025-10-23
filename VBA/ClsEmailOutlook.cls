@@ -27,7 +27,7 @@ Option Explicit
 '   - Ativar a biblioteca "Microsoft Outlook 16.0 Object Library" no Editor VBA: Ferramentas > Referências > Microsoft Outlook 16.0 Object Library
 '   - Ativar a biblioteca "Microsoft Scripting Runtime" no Editor VBA: Ferramentas > Referências > Microsoft Scripting Runtime
 '   - Baixar e instalar a classe ClsLogger:
-'       - Baixe no link: https://github.com/LucasWyllamys/utils/blob/main/VBA/clsLogger.cls
+'       - Baixe no link: https://github.com/LucasWyllamys/utils/blob/main/VBA/ClsLogger.cls
 '       - Importe no projeto.
 '
 ' 3. ESTRUTURA INTERNA
@@ -107,10 +107,11 @@ Option Explicit
 '    Set email = New ClsEmailOutlook ' Instancia o objeto
 '    Set chave_valor = New Scripting.Dictionary ' Instancia o dicionário
 '
+'    email.ImportarTemplateHTML "C:\Users\U350504\Desktop\Classe de interação com arquivo JSON\Template.htm"
+'
 '    chave_valor.Add "[CHAVE1]", "Olá," ' Adiciona chave-valor
 '    chave_valor.Add "[CHAVE2]", "Mundo!" ' Adiciona chave-valor
 '
-'    email.ImportarTemplateHTML "C:\Users\U350504\Desktop\Classe de interação com arquivo JSON\Template.htm"
 '    email.SubstituirChavesTemplateHTML chave_valor
 '    email.EnviarEmail "remetente@exemplo.com", "destinatario@exemplo.com", "Assunto do E-mail", , , , "C:\Users\U350504\Downloads\Documentacao_Classe_Email_Outlook.pdf"
 '
@@ -145,8 +146,6 @@ Private Sub Class_Initialize()
     Set OutlookApp = New Outlook.Application 'Instanciamento do Outlook
     Set Logger = New clsLogger
     
-    Logger.LogDebug "========== Início ClsEmailOutlook =========="
-    
     Exit Sub
 TratarErro:
     If Not Logger Is Nothing Then Logger.LogError "Erro ao inicializar: " & Err.Description
@@ -158,8 +157,7 @@ Private Sub Class_Terminate()
     ' Libera os objetos utilizados
     Set OutlookApp = Nothing
     Set EmailItem = Nothing
-    
-    If Not Logger Is Nothing Then Logger.LogDebug "========== Fim ClsEmailOutlook =========="
+    Set Logger = Nothing
 End Sub
 
 '==================================== Métodos Assessores Privados ====================================
@@ -173,9 +171,9 @@ Private Property Get EmailItem() As Outlook.MailItem: Set EmailItem = pEmailItem
 
 Private Property Set EmailItem(objeto As Outlook.MailItem): Set pEmailItem = objeto: End Property
 
-Private Property Get Logger() As clsLogger: Set Logger = pLogger: End Property
+Public Property Get Logger() As clsLogger: Set Logger = pLogger: End Property
 
-Private Property Set Logger(objeto As clsLogger): Set pLogger = objeto: End Property
+Public Property Set Logger(objeto As clsLogger): Set pLogger = objeto: End Property
 
 Private Property Get HTMLTemplate() As String: HTMLTemplate = pHTMLTemplate: End Property
 
