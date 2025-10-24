@@ -7,74 +7,94 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
+'===========================================================================================================
+' Classe VBA: ClsJsonFileManipulation - Manipulação de arquivos JSON
+' Descrição: Esta classe permite carregar, salvar, limpar e converter objetos JSON no VBA utilizando o JsonConverter e o módulo auxiliar FileManipulation para operações de leitura e escrita de arquivos.
+' Versão: 1.0.0
+' Autor: Lucas Wyllamys Carmo da Silva
+' Criado em: 17/10/2025
+' Atualizado em: 24/10/2025
+' Pré-requisitos:
+'   - O projeto VBA deve estar salvo em um diretório válido.
+'   - Importar os módulos:
+'       - JsonConverter: https://github.com/VBA-tools/VBA-JSON
+'       - FileManipulation: https://github.com/LucasWyllamys/utils/blob/main/VBA/FileManipulation.bas
+'       - PublicConstantsVariables: https://github.com/LucasWyllamys/utils/blob/main/VBA/PublicConstantsVariables.bas
+' Exemplo de uso:
+'   Dim jsonHandler As ClsJsonFileManipulation
+'   Set jsonHandler = New ClsJsonFileManipulation
+'
+'   jsonHandler.LoadFromFile "C:\Dados\config.json"
+'   Debug.Print jsonHandler.GetJsonString
+'
+'   jsonHandler.jsonObj.Add "versao", "1.0.0"
+'   jsonHandler.SaveToFile
+' Observações:
+'   - O arquivo JSON é criado automaticamente se não existir.
+'   - O conteúdo do JSON é armazenado como um objeto Dictionary.
+'   - A classe depende do JsonConverter para interpretar e gerar strings JSON.
+'===========================================================================================================
+
 Option Explicit
 
-'=========================================== Propriedades ===========================================
+'========================================= Propriedades Privadas ==========================================
 
-Private pCaminhoArquivo As String
-Private pObjJson As Scripting.Dictionary
+Private pJsonFilePath As String
+Private pJsonObj As Scripting.dictionary
+
+'============================================== Inicialização =============================================
+
+Private Sub Class_Initialize()
+    Set pJsonObj = New Scripting.dictionary
+End Sub
 
 '=========================================== Métodos Assessores ===========================================
 
-Private Property Get caminhoArquivo() As String
-    caminhoArquivo = pCaminhoArquivo
-End Property
+Private Property Get JsonFilePath() As String: JsonFilePath = pJsonFilePath: End Property
 
-Private Property Let caminhoArquivo(value As String)
-    pCaminhoArquivo = value
-End Property
+Private Property Let JsonFilePath(value As String): pJsonFilePath = value: End Property
 
-Public Property Get objJson() As Scripting.Dictionary
-    Set objJson = pObjJson
-End Property
+Public Property Get jsonObj() As Scripting.dictionary: Set jsonObj = pJsonObj: End Property
 
-Public Property Set objJson(obj As Scripting.Dictionary)
-    Set pObjJson = obj
-End Property
+Public Property Set jsonObj(obj As Scripting.dictionary): Set pJsonObj = obj: End Property
 
 '=========================================== Métodos Públicos ===========================================
 
-' Lê o conteúdo do JSON e retorna como objeto
-Public Sub LerJSON(caminhoArquivoJSON As String)
-    Dim fso As New FileSystemObject
-    Dim arquivo As TextStream
-    Dim textoJson As String
-    Dim json As Scripting.Dictionary
+' Lê um arquivo JSON e armazena como objeto Dictionary
+' @param jsonFilePath Caminho completo do arquivo JSON
+' @throws ERR_FILE_NOT_FOUND se o arquivo não existir
+' @throws ERR_READ_FILE_FAILED se houver erro na leitura
+Public Sub LoadFromFile(filePath As String)
+    Dim jsonText As String
     
-    caminhoArquivo = caminhoArquivoJSON
-    
-    Set arquivo = fso.OpenTextFile(caminhoArquivo, ForReading)  ' Abre o arquivo em modo leitura.
-    textoJson = arquivo.ReadAll ' Lê todo o arquivo e atribui à variável.
-    arquivo.Close ' Fecha o aquivo.
-    
-    Set json = JsonConverter.ParseJson(textoJson) ' Converte o texto JSON em objeto para ser manipulado no VBA.
-    Set objJson = json ' Armazena na propriedade privada.
+    ' Verifica se o arquivo existe
+    If FileManipulation.FileExists(filePath) Then
+        JsonFilePath = filePath
+        jsonText = FileManipulation.ReadFile(JsonFilePath) ' Lê o arquivo
+        
+        If jsonText <> "" Then
+            Set jsonObj = JsonConverter.ParseJson(jsonText) ' Converte o texto JSON em objeto para ser manipulado no VBA.
+        End If
+    Else
+        Err.Raise ERR_FILE_NOT_FOUND, "ClsJsonFileManipulation", "Arquivo não encontrado!"
+    End If
 End Sub
 
 ' Limpa todo o arquivo JSON
-Public Sub LimparJSON()
-    Set objJson = New Scripting.Dictionary
-    SalvarJSON
+Public Sub ResetJson()
+    Set jsonObj = New Scripting.dictionary
 End Sub
 
-' Retorna a string JSON formatada
-Public Function ObterStringJSON() As String
-    ObterStringJSON = JsonConverter.ConvertToJson(objJson, Whitespace:=4)
+' Retorna o conteúdo do JSON como string formatada
+' @return String JSON formatada com indentação
+Public Function GetJsonString() As String
+    GetJsonString = JsonConverter.ConvertToJson(jsonObj, Whitespace:=4)
 End Function
 
-' Salva o objeto JSON no arquivo com codificação UTF-8 (acentos preservados)
-Public Sub SalvarJSON()
-    Dim fso As Scripting.FileSystemObject
-    Dim arquivo As Scripting.TextStream
-    Dim textoJson As String
+' Salva o objeto JSON no arquivo atual
+Public Sub SaveToFile()
+    Dim jsonText As String
     
-    textoJson = JsonConverter.ConvertToJson(objJson, Whitespace:=4) ' Converte o objeto em string de JSON.
-    
-    Set fso = New Scripting.FileSystemObject
-    Set arquivo = fso.CreateTextFile(caminhoArquivo, True)
-    
-    With arquivo
-        .Write textoJson ' Escreve o texto JSON no arquivo
-        .Close ' Fecha o arquivo
-    End With
+    jsonText = JsonConverter.ConvertToJson(jsonObj, Whitespace:=4) ' Converte o objeto em string de JSON.
+    FileManipulation.WriteFile JsonFilePath, jsonText, False ' Salva o arquivo
 End Sub
