@@ -24,7 +24,7 @@ Attribute VB_Exposed = False
 '       - Microsoft Scripting Runtime: No Editor VBA: Ferramentas > Referências > Microsoft Scripting Runtime
 '   - Importar os módulos:
 '       - FileManipulation: https://github.com/LucasWyllamys/utils/blob/main/VBA/FileManipulation.bas
-'       - PublicConstantsVariables: https://github.com/LucasWyllamys/utils/blob/main/VBA/PublicConstantsVariables.bas
+'       - PublicConstants: https://github.com/LucasWyllamys/utils/blob/main/VBA/PublicConstants.bas
 ' Como criar um template HTML do e-mail do outlook:
 '    1. Abra o e-mail no Outlook
 '    2. Escreva e formate o corpo do e-mail, incluindo variáveis como [NOME], [DATA], etc.
@@ -57,9 +57,9 @@ Option Explicit
 
 '====================================== Propriedades Privadas ========================================
  
-Private pOutlookApp                 As Outlook.Application          ' Referência do Outlook
-Private pEmailItem                  As Outlook.MailItem             ' Referência do E-mail
-Private pHtmlTemplate               As String                       ' Armazena o HTML do template de e-mail
+Private pOutlookApp     As Outlook.Application ' Referência do Outlook
+Private pEmailItem      As Outlook.MailItem ' Referência do E-mail
+Private pHtmlTemplate   As String ' Armazena o HTML do template de e-mail
 
 '=========================================== Inicialização ===========================================
 
@@ -81,14 +81,13 @@ End Sub
 
 '==================================== Métodos Assessores Privados ====================================
 
-' Propriedades encapsuladas para acesso aos objetos privados
 Private Property Get OutlookApp() As Outlook.Application: Set OutlookApp = pOutlookApp: End Property
 
-Private Property Set OutlookApp(objeto As Outlook.Application): Set pOutlookApp = objeto: End Property
+Private Property Set OutlookApp(object As Outlook.Application): Set pOutlookApp = object: End Property
 
 Private Property Get EmailItem() As Outlook.MailItem: Set EmailItem = pEmailItem: End Property
 
-Private Property Set EmailItem(objeto As Outlook.MailItem): Set pEmailItem = objeto: End Property
+Private Property Set EmailItem(object As Outlook.MailItem): Set pEmailItem = object: End Property
 
 Private Property Get HtmlTemplate() As String: HtmlTemplate = pHtmlTemplate: End Property
 

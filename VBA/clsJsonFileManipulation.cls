@@ -8,7 +8,7 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 '===========================================================================================================
-' Classe VBA: ClsJsonFileManipulation - Manipulação de arquivos JSON
+' Classe VBA: clsJsonFileManipulation - Manipulação de arquivos JSON
 ' Descrição: Esta classe permite carregar, salvar, limpar e converter objetos JSON no VBA utilizando o JsonConverter e o módulo auxiliar FileManipulation para operações de leitura e escrita de arquivos.
 ' Versão: 1.0.0
 ' Autor: Lucas Wyllamys Carmo da Silva
@@ -19,7 +19,7 @@ Attribute VB_Exposed = False
 '   - Importar os módulos:
 '       - JsonConverter: https://github.com/VBA-tools/VBA-JSON
 '       - FileManipulation: https://github.com/LucasWyllamys/utils/blob/main/VBA/FileManipulation.bas
-'       - PublicConstantsVariables: https://github.com/LucasWyllamys/utils/blob/main/VBA/PublicConstantsVariables.bas
+'       - PublicConstants: https://github.com/LucasWyllamys/utils/blob/main/VBA/PublicConstants.bas
 ' Exemplo de uso:
 '   Dim jsonHandler As ClsJsonFileManipulation
 '   Set jsonHandler = New ClsJsonFileManipulation

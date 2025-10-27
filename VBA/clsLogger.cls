@@ -19,7 +19,7 @@ Attribute VB_Exposed = False
 '   - O projeto VBA deve estar salvo em um diretório válido.
 '   - Importar os módulos:
 '       - FileManipulation: https://github.com/LucasWyllamys/utils/blob/main/VBA/FileManipulation.bas
-'       - PublicConstantsVariables: https://github.com/LucasWyllamys/utils/blob/main/VBA/PublicConstantsVariables.bas
+'       - PublicConstants: https://github.com/LucasWyllamys/utils/blob/main/VBA/PublicConstants.bas
 ' Exemplo de uso:
 '   Dim logger As clsLogger
 '   Set logger = New clsLogger
