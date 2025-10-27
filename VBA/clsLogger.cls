@@ -54,7 +54,7 @@ Private Property Let LogFilePath(value As String): pLogFilePath = value: End Pro
 ' Define o caminho padrão do arquivo de log ao instanciar a classe
 Private Sub Class_Initialize()
     If ThisWorkbook.Path = "" Then
-        Err.Raise ERR_FILE_NOT_FOUND, "ClsLogger", "O projeto precisa estar salvo para gerar o log."
+        Err.Raise ERR_FILE_NOT_FOUND, "ClsLogger", "O projeto precisa estar salvo para gerar o log (" & Err.Number & "): " & Err.Description ' Lançamento de erro
     Else
         LogFilePath = ThisWorkbook.Path & "\log.log" ' Define o caminho de arquivo log padrão
     End If
@@ -67,7 +67,7 @@ Public Sub SetLogFilePath(Optional filePath As String = "")
     If FileManipulation.FileExists(filePath) Then
         LogFilePath = filePath
     Else
-        Err.Raise ERR_FILE_NOT_FOUND, "ClsLogger", "Arquivo não encontrado!"
+        Err.Raise ERR_FILE_NOT_FOUND, "ClsLogger", "Arquivo não encontrado (" & Err.Number & "): " & Err.Description
     End If
 End Sub
 

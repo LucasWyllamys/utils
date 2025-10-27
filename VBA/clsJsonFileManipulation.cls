@@ -76,7 +76,7 @@ Public Sub LoadFromFile(filePath As String)
             Set jsonObj = JsonConverter.ParseJson(jsonText) ' Converte o texto JSON em objeto para ser manipulado no VBA.
         End If
     Else
-        Err.Raise ERR_FILE_NOT_FOUND, "ClsJsonFileManipulation", "Arquivo não encontrado!"
+        Err.Raise ERR_FILE_NOT_FOUND, "ClsJsonFileManipulation", "Arquivo não encontrado (" & Err.Number & "): " & Err.Description ' Lançamento de erro
     End If
 End Sub
 
