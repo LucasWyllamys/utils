@@ -61,24 +61,6 @@ Private pOutlookApp     As Outlook.Application ' Referência do Outlook
 Private pEmailItem      As Outlook.MailItem ' Referência do E-mail
 Private pHtmlTemplate   As String ' Armazena o HTML do template de e-mail
 
-'=========================================== Inicialização ===========================================
-
-Private Sub Class_Initialize()
-    On Error GoTo ErrorHandler
-    
-    Set OutlookApp = New Outlook.Application 'Instanciamento do Outlook
-    
-    Exit Sub
-ErrorHandler:
-    Err.Raise ERR_OUTLOOK_INIT_FAILED, "ClsEmailOutlook", "Erro ao inicializar (" & Err.Number & "): " & Err.Description ' Lançamento de erro
-End Sub
-
-Private Sub Class_Terminate()
-    Set OutlookApp = Nothing
-    Set EmailItem = Nothing
-    HtmlTemplate = ""
-End Sub
-
 '==================================== Métodos Assessores Privados ====================================
 
 Private Property Get OutlookApp() As Outlook.Application: Set OutlookApp = pOutlookApp: End Property
@@ -92,6 +74,24 @@ Private Property Set EmailItem(object As Outlook.MailItem): Set pEmailItem = obj
 Private Property Get HtmlTemplate() As String: HtmlTemplate = pHtmlTemplate: End Property
 
 Private Property Let HtmlTemplate(value As String): pHtmlTemplate = value: End Property
+
+'=========================================== Inicialização ===========================================
+
+Private Sub Class_Initialize()
+    On Error GoTo ErrorHandler
+    
+    Set OutlookApp = New Outlook.Application 'Instanciamento do Outlook
+    
+    Exit Sub
+ErrorHandler:
+    Err.Raise ERR_OUTLOOK_INIT_FAILED, "ClsEmailOutlook", "Erro ao inicializar: " & Err.Description ' Lançamento de erro
+End Sub
+
+Private Sub Class_Terminate()
+    Set OutlookApp = Nothing
+    Set EmailItem = Nothing
+    HtmlTemplate = ""
+End Sub
 
 '=========================================== Métodos Públicos ===========================================
 
@@ -108,7 +108,7 @@ Public Sub ImportHtmlTemplate(HtmlTemplatePath As String)
 
     Exit Sub
 ErrorHandler:
-    Err.Raise ERR_FILE_NOT_FOUND, "ClsEmailOutlook", "Erro ao importar template HTML (" & Err.Number & "): " & Err.Description 
+    Err.Raise ERR_FILE_NOT_FOUND, "ClsEmailOutlook", "Erro ao importar template HTML: " & Err.Description
 End Sub
 
 ' Descrição: Substitui chaves no template HTML por valores do dicionário
@@ -127,7 +127,7 @@ Public Sub ReplaceHtmlTemplateKey(dictionary As Scripting.dictionary)
     
     Exit Sub
 ErrorHandler:
-    Err.Raise ERR_WRITE_FILE_FAILED, "ClsEmailOutlook", "Erro ao substituir chaves no template HTML (" & Err.Number & "): " & Err.Description ' Lançamento de erro
+    Err.Raise ERR_WRITE_FILE_FAILED, "ClsEmailOutlook", "Erro ao substituir chaves no template HTML: " & Err.Description
 End Sub
 
 ' Descrição: Envia um e-mail utilizando o Microsoft Outlook, com suporte a corpo HTML (com ou sem template), anexos, cópia (CC), cópia oculta (BCC) e controle da exibição antes do envio.
@@ -181,7 +181,7 @@ Public Sub SendEmail(sender As String, recipient As String, subject As String, _
     
     Exit Sub
 ErrorHandler:
-    Err.Raise ERR_EMAIL_SEND_FAILED, "ClsEmailOutlook", "Erro ao enviar e-mail (" & Err.Number & "): " & Err.Description
+    Err.Raise ERR_EMAIL_SEND_FAILED, "ClsEmailOutlook", "Erro ao enviar e-mail: " & Err.Description
 End Sub
 
 ' Descrição: Reseta o template HTML
