@@ -7,12 +7,52 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
+'===========================================================================================================
+' Classe VBA: clsDatabaseConnection - Conexão com Banco de Dados via ADODB
+' Descrição: Esta classe permite realizar conexões com bancos de dados utilizando a biblioteca ADODB.
+'   - Suporte aos bancos: MySQL, SQL Server e Access.
+'   - Montagem automática da string de conexão.
+'   - Execução de comandos SQL: SELECT, INSERT, UPDATE, DELETE.
+'   - Gerenciamento de objetos ADODB.Connection, ADODB.Command e ADODB.Recordset.
+' Versão: 1.0.0
+' Autor: Lucas Wyllamys Carmo da Silva
+' Criado em: 29/10/2025
+' Atualizado em: 29/10/2025
+' Pré-requisitos:
+'   - Ativar biblioteca:
+'       - Microsoft ActiveX Data Objects 6.1 Library: No Editor VBA: Ferramentas > Referências > Microsoft ActiveX Data Objects 6.1 Library
+'   - Importar os módulos:
+'       - PublicConstants: https://github.com/LucasWyllamys/utils/blob/main/VBA/PublicConstants.bas
+' Observações:
+'   - A propriedade `rs` armazena o resultado de consultas SELECT.
+'   - A propriedade `cmd` é usada internamente para executar comandos SQL.
+'   - A propriedade `conn` representa a conexão ativa com o banco de dados.
+'   - A string de conexão é montada automaticamente com base no tipo de banco informado.
+' Exemplo de uso:
+'   Dim db As clsDatabaseConnection
+'   Set db = New clsDatabaseConnection
+'
+'   db.Initialize "sqlserver", "database", "server" , "usuario", "senha", "provider"
+'
+'   If db.OpenDb Then
+'       db.ExecuteNonQuery "UPDATE Tabela SET Nome = 'Lucas' WHERE ID = 1"
+'       db.ExecuteSql "SELECT * FROM Tabela"
+'       Do While Not db.rs.EOF
+'           Debug.Print db.rs.Fields("Nome").Value
+'           db.rs.MoveNext
+'       Loop
+'       db.CloseRs
+'       db.CloseDb
+'   End If
+'===========================================================================================================
+
 Option Explicit
 
 '====================================== Propriedades Privadas ========================================
 
 Private pConn As ADODB.Connection
 Private pRs As ADODB.Recordset
+Private pCmd As ADODB.Command
 
 Private pServer As String
 Private pDatabase As String
@@ -31,6 +71,10 @@ Private Property Set conn(object As ADODB.Connection): Set pConn = object: End P
 Public Property Get rs() As ADODB.Recordset: Set rs = pRs: End Property
 
 Public Property Set rs(object As ADODB.Recordset): Set pRs = object: End Property
+
+Public Property Get cmd() As ADODB.Command: Set cmd = pCmd: End Property
+
+Public Property Set cmd(object As ADODB.Command): Set pCmd = object: End Property
 
 Private Property Get server() As String: server = pServer: End Property
 
@@ -63,10 +107,10 @@ Private Property Let connStr(value As String): pConnStr = value: End Property
 '=========================================== Inicialização ===========================================
 
 Public Sub Initialize(ByVal tipoBanco As String, _
-                        ByVal strServer As String, _
                         ByVal strDatabase As String, _
-                        ByVal strUserId As String, _
-                        ByVal strPassword As String, _
+                        Optional ByVal strServer As String = "", _
+                        Optional ByVal strUserId As String = "", _
+                        Optional ByVal strPassword As String = "", _
                         Optional ByVal strProvider As String = "", _
                         Optional ByVal strDriver As String = "")
     
@@ -96,18 +140,35 @@ ErrorHandler:
     OpenDb = False
 End Function
 
-' Executa SELECT e retorna Recordset
-Public Function ExecuteSql(ByVal sql As String) As ADODB.Recordset
+' Use os comando SELECT para retornar uma Recordset na propriedade rs
+Public Sub ExecuteSql(ByVal sql As String)
     On Error GoTo ErrorHandler
-    Set rs = New ADODB.Recordset
     
-    rs.Open sql, conn, adOpenStatic, adLockReadOnly '(tabela, conexão ativa, tipo de cursor, tipo de bloqueio)
-    Set ExecuteSql = rs
+    Set cmd = New ADODB.Command
+    cmd.ActiveConnection = conn
+    cmd.CommandType = adCmdText
+    cmd.CommandText = sql
+    Set rs = cmd.Execute
     
-    Exit Function
+    Exit Sub
 ErrorHandler:
     Err.Raise ERR_DB_QUERY_FAILED, "clsDatabaseConnection", "Falha ao executar a consulta SQL (" & Err.Number & "): " & Err.Description
-End Function
+End Sub
+
+' Use os comandos: INSERT, UPDATE, DELETE
+Public Sub ExecuteNonQuery(ByVal sql As String)
+    On Error GoTo ErrorHandler
+    
+    Set cmd = New ADODB.Command
+    cmd.ActiveConnection = conn
+    cmd.CommandType = adCmdText
+    cmd.CommandText = sql
+    cmd.Execute
+    
+    Exit Sub
+ErrorHandler:
+    Err.Raise ERR_DB_QUERY_FAILED, "clsDatabaseConnection", "Erro ao executar comando SQL (" & Err.Number & "): " & Err.Description
+End Sub
 
 ' Fecha a conexão com a recordset
 Public Sub CloseRs()
@@ -121,6 +182,8 @@ End Sub
 
 ' Fecha a conexão com a recordset e o banco de dados
 Public Sub CloseDb()
+    ' Esvazia o objeto cmd
+    Set cmd = Nothing
     ' Fecha a conexão com a recordset
     If Not rs Is Nothing Then
         If rs.State = adStateOpen Then rs.Close
