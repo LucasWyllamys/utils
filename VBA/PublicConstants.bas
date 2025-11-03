@@ -1,12 +1,11 @@
 Attribute VB_Name = "PublicConstants"
-'===========================================================================================================
+'================================================================================
 ' Módulo VBA: PublicConstants - Constantes públicas
-' Descrição: Este módulo padroniza constantes para serem reutilizadas sempre que necessário.
-' Versão: 1.1.0
+' Versão: 1.2.0
 ' Autor: Lucas Wyllamys Carmo da Silva
 ' Criado em: 29/10/2025
-' Atualizado em: 31/10/2025
-'============================================================================================================
+' Atualizado em: 03/11/2025
+'================================================================================
 
 Option Explicit
 
@@ -16,6 +15,7 @@ Public Enum FileErrorCodes
     ERR_READ_FILE_FAILED = 1001 ' Erro ao ler arquivo
     ERR_WRITE_FILE_FAILED = 1002  ' Erro ao escrever no arquivo
     ERR_SAVE_FILE_FAILED = 1003  ' Erro ao salvar o arquivo
+    ERR_INVALID_FILE_TYPE = 1004  ' Tipo de arquivo inválido
 End Enum
 
 ' ================================= Manipulação de E-mail =================================
@@ -46,8 +46,3 @@ Public Enum DBDataOperationErrorCodes
     ERR_DB_DATA_TYPE_MISMATCH = 1306  ' Tipo de dado incompatível
     ERR_DB_RECORD_NOT_FOUND = 1307    ' Registro não encontrado para atualização ou exclusão
 End Enum
-
-' ================================= Outros =================================
-
-Public Const ERR_INVALID_PASSWORD As Long = 2000
-

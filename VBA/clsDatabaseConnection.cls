@@ -9,10 +9,10 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 '===========================================================================================================
 ' Classe VBA: clsDatabaseConnection - Conexão com Banco de Dados via ADODB
-' Versão: 2.1.0
+' Versão: 2.2.0
 ' Autor: Lucas Wyllamys Carmo da Silva
 ' Criado em: 29/10/2025
-' Atualizado em: 30/10/2025
+' Atualizado em: 03/11/2025
 '
 ' Descrição:
 '   Esta classe encapsula a lógica de conexão e execução de comandos SQL em bancos de dados utilizando a
@@ -98,9 +98,9 @@ Private Property Get conn() As ADODB.Connection: Set conn = pConn: End Property
 Private Property Set conn(object As ADODB.Connection): Set pConn = object: End Property
 
 
-Public Property Get rs() As ADODB.Recordset: Set rs = pRs: End Property
+Friend Property Get rs() As ADODB.Recordset: Set rs = pRs: End Property
 
-Public Property Set rs(object As ADODB.Recordset): Set pRs = object: End Property
+Friend Property Set rs(object As ADODB.Recordset): Set pRs = object: End Property
 
 
 Private Property Get cmd() As ADODB.Command: Set cmd = pCmd: End Property
@@ -108,13 +108,13 @@ Private Property Get cmd() As ADODB.Command: Set cmd = pCmd: End Property
 Private Property Set cmd(object As ADODB.Command): Set pCmd = object: End Property
 
 
-Public Property Get connStr() As String: connStr = pConnStr: End Property
+Friend Property Get connStr() As String: connStr = pConnStr: End Property
 
 Private Property Let connStr(value As String): pConnStr = value: End Property
 
 '=========================================== Inicialização ===========================================
 
-Public Sub Initialize(ByVal dbType As DatabaseType, _
+Friend Sub Initialize(ByVal dbType As DatabaseType, _
                         Optional ByVal strDataSource As String = "", _
                         Optional ByVal strDatabase As String = "", _
                         Optional ByVal strServer As String = "", _
@@ -134,10 +134,14 @@ Public Sub Initialize(ByVal dbType As DatabaseType, _
     AssembleConnectionString dbType
 End Sub
 
+Private Sub Class_Terminate()
+    CloseConn
+End Sub
+
 '=========================================== Métodos Públicos ===========================================
 
 ' Abre a conexão com o banco
-Public Function OpenConn() As Boolean
+Friend Function OpenConn() As Boolean
     On Error GoTo ErrorHandler
 
     Set conn = New ADODB.Connection
@@ -152,12 +156,12 @@ ErrorHandler:
 End Function
 
 ' Verifica se o banco de dados está conectado
-Public Function IsConnected() As Boolean
+Friend Function IsConnected() As Boolean
     IsConnected = Not conn Is Nothing And conn.State = adStateOpen
 End Function
 
 ' Use os comando SELECT para retornar uma Recordset na propriedade rs
-Public Function ExecuteQuery(ByVal sql As String) As Boolean
+Friend Function ExecuteQuery(ByVal sql As String) As Boolean
     On Error GoTo ErrorHandler
     
     If Not IsConnected Then Err.Raise ERR_DB_CONNECTION_FAILED, "clsDatabaseConnection", "Conexão NÃO está ativa."
@@ -179,7 +183,7 @@ ErrorHandler:
 End Function
 
 ' Use os comandos INSERT, UPDATE, DELETE, retorna o ID do registro (exceto para o DELETE)
-Public Sub ExecuteNonQuery(ByVal sql As String)
+Friend Sub ExecuteNonQuery(ByVal sql As String)
     On Error GoTo ErrorHandler
     
     If Not IsConnected Then Err.Raise ERR_DB_CONNECTION_FAILED, "clsDatabaseConnection", "Conexão NÃO está ativa."
@@ -199,7 +203,7 @@ ErrorHandler:
 End Sub
 
 ' Retorna o ID do ultimo registro inserido
-Public Function GetLastInsertId() As Long
+Friend Function GetLastInsertId() As Long
     On Error GoTo ErrorHandler
     If Not IsConnected Then Err.Raise ERR_DB_CONNECTION_FAILED, "clsDatabaseConnection", "Conexão não está ativa."
 
@@ -214,7 +218,7 @@ ErrorHandler:
 End Function
 
 ' Fecha a conexão com a recordset e o banco de dados
-Public Sub CloseConn()
+Friend Sub CloseConn()
     CloseCmd
     CloseRs
     CloseDb
