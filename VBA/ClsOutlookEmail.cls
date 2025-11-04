@@ -17,7 +17,7 @@ Attribute VB_Exposed = False
 ' Versão: 3.0.0
 ' Autor: Lucas Wyllamys Carmo da Silva
 ' Criado em: 22/10/2025
-' Atualizado em: 24/10/2025
+' Atualizado em: 04/11/2025
 ' Pré-requisitos:
 '   - Ativar bibliotecas
 '       - Microsoft Outlook 16.0 Object Library: No Editor VBA: Ferramentas > Referências > Microsoft Outlook 16.0 Object Library
@@ -45,7 +45,7 @@ Attribute VB_Exposed = False
 '    chave_valor.Add "[CHAVE1]", "Olá," ' Adiciona chave-valor
 '    chave_valor.Add "[CHAVE2]", "Mundo!" ' Adiciona chave-valor
 '
-'    email.ReplaceHtmlTemplateKey chave_valor
+'    email.ReplaceKeys chave_valor
 '    email.SendEmail "remetente@exemplo.com", "destinatario@exemplo.com", "Assunto do E-mail", , , , "C:\Users\U350504\Downloads\Documentacao_Classe_Email_Outlook.pdf"
 ' Observações:
 '   - A assinatura padrão do Outlook é preservada se não for usado um template.
@@ -63,48 +63,48 @@ Private pHtmlTemplate   As String ' Armazena o HTML do template de e-mail
 
 '==================================== Métodos Assessores Privados ====================================
 
-Private Property Get OutlookApp() As Outlook.Application: Set OutlookApp = pOutlookApp: End Property
+Private Property Get outlookApp() As Outlook.Application: Set outlookApp = pOutlookApp: End Property
 
-Private Property Set OutlookApp(object As Outlook.Application): Set pOutlookApp = object: End Property
+Private Property Set outlookApp(object As Outlook.Application): Set pOutlookApp = object: End Property
 
-Private Property Get EmailItem() As Outlook.MailItem: Set EmailItem = pEmailItem: End Property
+Private Property Get emailItem() As Outlook.MailItem: Set emailItem = pEmailItem: End Property
 
-Private Property Set EmailItem(object As Outlook.MailItem): Set pEmailItem = object: End Property
+Private Property Set emailItem(object As Outlook.MailItem): Set pEmailItem = object: End Property
 
-Private Property Get HtmlTemplate() As String: HtmlTemplate = pHtmlTemplate: End Property
+Private Property Get htmlTemplate() As String: htmlTemplate = pHtmlTemplate: End Property
 
-Private Property Let HtmlTemplate(value As String): pHtmlTemplate = value: End Property
+Private Property Let htmlTemplate(value As String): pHtmlTemplate = value: End Property
 
 '=========================================== Inicialização ===========================================
 
 Private Sub Class_Initialize()
     On Error GoTo ErrorHandler
     
-    Set OutlookApp = New Outlook.Application 'Instanciamento do Outlook
+    Set outlookApp = New Outlook.Application 'Instanciamento do Outlook
     
     Exit Sub
 ErrorHandler:
-    Err.Raise ERR_OUTLOOK_INIT_FAILED, "ClsEmailOutlook", "Erro ao inicializar: " & Err.Description ' Lançamento de erro
+    Err.Raise ERR_OUTLOOK_INIT_FAILED, "ClsEmailOutlook", "Erro ao inicializar Outlook: " & Err.Description ' Lançamento de erro
 End Sub
 
 Private Sub Class_Terminate()
-    Set OutlookApp = Nothing
-    Set EmailItem = Nothing
-    HtmlTemplate = ""
+    Set outlookApp = Nothing
+    Set emailItem = Nothing
+    htmlTemplate = ""
 End Sub
 
 '=========================================== Métodos Públicos ===========================================
 
 ' Descrição: Importa um template HTML de e-mail
 ' Parâmetros:
-'   - HtmlTemplatePath: caminho completo do arquivo HTML
-Public Sub ImportHtmlTemplate(HtmlTemplatePath As String)
+'   - htmlTemplatePath: caminho completo do arquivo HTML
+Public Sub ImportHtmlTemplate(htmlTemplatePath As String)
     Dim HtmlContent As String
     
     On Error GoTo ErrorHandler
     
-    HtmlContent = FileManipulation.ReadFile(HtmlTemplatePath)
-    HtmlTemplate = AdjustTemplatePath(HtmlTemplatePath, HtmlContent)
+    HtmlContent = FileManipulation.ReadFile(htmlTemplatePath)
+    htmlTemplate = AdjustTemplatePath(htmlTemplatePath, HtmlContent)
 
     Exit Sub
 ErrorHandler:
@@ -113,15 +113,15 @@ End Sub
 
 ' Descrição: Substitui chaves no template HTML por valores do dicionário
 ' Parâmetros:
-'   - dictionary: objeto Scripting.Dictionary com pares chave-valor
-Public Sub ReplaceHtmlTemplateKey(dictionary As Scripting.dictionary)
+'   - dictKeysValues: objeto Scripting.Dictionary com pares chave-valor
+Public Sub ReplaceKeys(dictKeysValues As Scripting.Dictionary)
     Dim key As Variant
     
     On Error GoTo ErrorHandler
     
-    If Not dictionary Is Nothing Then ' Verifica se o dicionário não está vazio
-        For Each key In dictionary.Keys   ' Itera sobre todos as chaves do dicionário
-            HtmlTemplate = Replace(HtmlTemplate, key, dictionary(key)) ' Substitui os valores das respectivas chaves
+    If Not Dictionary Is Nothing Then ' Verifica se o dicionário não está vazio
+        For Each key In Dictionary.Keys   ' Itera sobre todos as chaves do dicionário
+            htmlTemplate = Replace(htmlTemplate, key, Dictionary(key)) ' Substitui os valores das respectivas chaves
         Next key
     End If
     
@@ -153,9 +153,9 @@ Public Sub SendEmail(sender As String, recipient As String, subject As String, _
     
     On Error GoTo ErrorHandler
 
-    Set EmailItem = OutlookApp.CreateItem(olMailItem) 'Cria um item de e-mail
+    Set emailItem = outlookApp.CreateItem(olMailItem) 'Cria um item de e-mail
     
-    With EmailItem
+    With emailItem
         If showBeforeSend Then .Display 'Exibir e-mail
         
         .SentOnBehalfOfName = sender
@@ -164,10 +164,10 @@ Public Sub SendEmail(sender As String, recipient As String, subject As String, _
         If hiddenCopy <> "" Then .BCC = hiddenCopy
         .subject = subject
         
-        If HtmlTemplate = "" Then
+        If htmlTemplate = "" Then
             .HTMLBody = htmlEmailBody & .HTMLBody ' Corpo + Assinatura padrão
         Else
-            .HTMLBody = HtmlTemplate
+            .HTMLBody = htmlTemplate
         End If
         
         If attachmentPath <> "" Then
@@ -186,7 +186,7 @@ End Sub
 
 ' Descrição: Reseta o template HTML
 Public Sub ResetTemplate()
-    HtmlTemplate = ""
+    htmlTemplate = ""
 End Sub
 
 '=========================================== Métodos Privados ===========================================
@@ -195,13 +195,13 @@ End Sub
 ' Parâmetros:
 '   - HtmlTemplatePath: caminho do arquivo HTML
 '   - HtmlContent: conteúdo lido do arquivo
-Private Function AdjustTemplatePath(HtmlTemplatePath As String, HtmlContent As String) As String
+Private Function AdjustTemplatePath(htmlTemplatePath As String, HtmlContent As String) As String
     Dim templateName As String
     Dim templateFolderPath As String
     
     On Error GoTo ErrorHandler
-    templateName = Replace(Replace(Dir(HtmlTemplatePath), ".html", "_arquivos"), ".htm", "_arquivos")
-    templateFolderPath = Left(HtmlTemplatePath, InStrRev(HtmlTemplatePath, "\") - 1)
+    templateName = Replace(Replace(Dir(htmlTemplatePath), ".html", "_arquivos"), ".htm", "_arquivos")
+    templateFolderPath = Left(htmlTemplatePath, InStrRev(htmlTemplatePath, "\") - 1)
     
     AdjustTemplatePath = Replace(HtmlContent, templateName & "/", templateFolderPath & "\" & templateName & "\")
     Exit Function

@@ -4,7 +4,7 @@ Attribute VB_Name = "PublicConstants"
 ' Versão: 1.2.0
 ' Autor: Lucas Wyllamys Carmo da Silva
 ' Criado em: 29/10/2025
-' Atualizado em: 03/11/2025
+' Atualizado em: 04/11/2025
 '================================================================================
 
 Option Explicit
@@ -20,20 +20,25 @@ End Enum
 
 ' ================================= Manipulação de E-mail =================================
 Public Enum EmailErrorCodes
-    ERR_OUTLOOK_INIT_FAILED = 1100 ' Erro ao inicializar o Outlook
-    ERR_EMAIL_SEND_FAILED = 1101 ' Erro de envio de e-mail
+    ERR_OUTLOOK_INIT_FAILED = 1050 ' Erro ao inicializar o Outlook
+    ERR_EMAIL_SEND_FAILED = 1051 ' Erro de envio de e-mail
+End Enum
+
+' ================================= Manipulação do Word =================================
+Public Enum WordErrorCodes
+    ERR_WORD_INIT_FAILED = 1200 ' Erro ao inicializar o Word
 End Enum
 
 ' ================================= Banco de Dados =================================
 Public Enum DBConnectionErrorCodes
-    ERR_DB_CONNECTION_FAILED = 1200      ' Falha ao conectar ao banco de dados
-    ERR_DB_TIMEOUT = 1201                ' Tempo de conexão excedido
-    ERR_DB_AUTHENTICATION_FAILED = 1202  ' Falha na autenticação com o banco de dados
-    ERR_DB_QUERY_FAILED = 1203           ' Erro ao executar a consulta SQL
-    ERR_DB_DISCONNECTED = 1204           ' Conexão com o banco de dados foi perdida
-    ERR_DB_DRIVER_NOT_FOUND = 1205       ' Driver de banco de dados não encontrado
-    ERR_DB_INVALID_CONNECTION_STRING = 1206 ' String de conexão inválida
-    ERR_DB_TRANSACTION_FAILED = 1207     ' Falha na transação com o banco de dados
+    ERR_DB_CONNECTION_FAILED = 1250      ' Falha ao conectar ao banco de dados
+    ERR_DB_TIMEOUT = 1251                ' Tempo de conexão excedido
+    ERR_DB_AUTHENTICATION_FAILED = 1252  ' Falha na autenticação com o banco de dados
+    ERR_DB_QUERY_FAILED = 1253           ' Erro ao executar a consulta SQL
+    ERR_DB_DISCONNECTED = 1254           ' Conexão com o banco de dados foi perdida
+    ERR_DB_DRIVER_NOT_FOUND = 1255       ' Driver de banco de dados não encontrado
+    ERR_DB_INVALID_CONNECTION_STRING = 1256 ' String de conexão inválida
+    ERR_DB_TRANSACTION_FAILED = 1257     ' Falha na transação com o banco de dados
 End Enum
 
 Public Enum DBDataOperationErrorCodes
