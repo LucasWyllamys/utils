@@ -9,10 +9,10 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 '===========================================================================================================
 ' Classe VBA: clsWordTemplateProcessor - Processador de Templates Word
-' Versão: 1.0.0
+' Versão: 1.2.0
 ' Autor: Lucas Wyllamys Carmo da Silva
 ' Criado em: 04/11/2025
-' Atualizado em: 04/11/2025
+' Atualizado em: 07/11/2025
 '
 ' Descrição:
 '   Esta classe encapsula a lógica de manipulação de documentos Word baseados em templates (.docx),
@@ -124,7 +124,7 @@ Public Sub ImportWordTemplate(wordTemplatePath As String)
     Exit Sub
 ErrHandler:
     CloseWordApp
-    Err.Raise ERR_FILE_NOT_FOUND, CLASS_NAME, "Erro ao importar template Word."
+    Err.Raise ERR_FILE_NOT_FOUND, CLASS_NAME, "Erro ao importar template Word: " & Err.Description
 End Sub
 
 ' Descrição: Verifica se um template Word está carregado
@@ -160,15 +160,17 @@ Public Sub ReplaceKeys(dictKeysValues As Scripting.Dictionary)
         .MatchSoundsLike = False ' Desativa a busca por palavras que soam como a procurada (útil em inglês)
         .MatchAllWordForms = False ' Desativa a busca por variações da palavra (ex: singular/plural, tempos verbais)
         For Each key In dictKeysValues.Keys
-            .Text = key
-            .Replacement.Text = dictKeysValues(key)
-            .Execute Replace:=wdReplaceAll
+            If Trim(key) <> "" Then
+                .Text = key
+                .Replacement.Text = dictKeysValues(key)
+                .Execute Replace:=wdReplaceAll
+            End If
         Next key
     End With
     Exit Sub
 ErrHandler:
     CloseWordApp
-    Err.Raise ERR_WRITE_FILE_FAILED, CLASS_NAME, "Erro ao substituir chaves no template HTML."
+    Err.Raise ERR_WRITE_FILE_FAILED, CLASS_NAME, "Erro ao substituir chaves no template HTML: " & Err.Description
 End Sub
 
 ' Descrição: Exporta o documento Word como DOCX ou PDF
@@ -195,20 +197,13 @@ Public Sub Export(targetFolderPath As String, fileName As String, FileType As Fi
     Exit Sub
 ErrHandler:
     CloseWordApp
-    Err.Raise ERR_SAVE_FILE_FAILED, CLASS_NAME, "Falha ao salvar arquivo."
+    Err.Raise ERR_SAVE_FILE_FAILED, CLASS_NAME, "Falha ao salvar arquivo: " & Err.Description
 End Sub
 
 ' Descrição: Exporta o documento e encerra a aplicação Word
 Public Sub ExportAndFinalize(targetFolderPath As String, fileName As String, FileType As FileType)
-    On Error GoTo ErrHandler
-    
     Export targetFolderPath, fileName, FileType
     CloseWordApp
-    
-    Exit Sub
-ErrHandler:
-    CloseWordApp
-    Err.Raise ERR_SAVE_FILE_FAILED, CLASS_NAME, "Falha ao salvar arquivo."
 End Sub
 
 ' Descrição: Fecha o documento Word sem salvar alterações
