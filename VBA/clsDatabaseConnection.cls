@@ -9,10 +9,10 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 '===========================================================================================================
 ' Classe VBA: clsDatabaseConnection - Conexão com Banco de Dados via ADODB
-' Versão: 2.2.0
+' Versão: 2.4.0
 ' Autor: Lucas Wyllamys Carmo da Silva
 ' Criado em: 29/10/2025
-' Atualizado em: 03/11/2025
+' Atualizado em: 11/11/2025
 '
 ' Descrição:
 '   Esta classe encapsula a lógica de conexão e execução de comandos SQL em bancos de dados utilizando a
@@ -89,6 +89,7 @@ Public Enum DatabaseType
     dbMySQL = 1
     dbSQLServer = 2
     dbAccess = 3
+    dbSAPHANA = 4
 End Enum
 
 '========================================= Métodos Assessores ========================================
@@ -110,7 +111,7 @@ Private Property Set cmd(object As ADODB.Command): Set pCmd = object: End Proper
 
 Friend Property Get connStr() As String: connStr = pConnStr: End Property
 
-Private Property Let connStr(value As String): pConnStr = value: End Property
+Private Property Let connStr(Value As String): pConnStr = Value: End Property
 
 '=========================================== Inicialização ===========================================
 
@@ -142,7 +143,7 @@ End Sub
 
 ' Abre a conexão com o banco
 Friend Function OpenConn() As Boolean
-    On Error GoTo ErrorHandler
+    'On Error GoTo ErrorHandler
 
     Set conn = New ADODB.Connection
     conn.ConnectionTimeout = 30 ' Tempo limite da conexão
@@ -162,9 +163,10 @@ End Function
 
 ' Use os comando SELECT para retornar uma Recordset na propriedade rs
 Friend Function ExecuteQuery(ByVal sql As String) As Boolean
-    On Error GoTo ErrorHandler
-    
+
     If Not IsConnected Then Err.Raise ERR_DB_CONNECTION_FAILED, "clsDatabaseConnection", "Conexão NÃO está ativa."
+    
+    On Error GoTo ErrorHandler
     
     Set cmd = New ADODB.Command
     cmd.CommandTimeout = 60 ' Tempo limite para execução do SELECT
@@ -178,7 +180,7 @@ Friend Function ExecuteQuery(ByVal sql As String) As Boolean
     ExecuteQuery = True
     Exit Function
 ErrorHandler:
-    Err.Raise ERR_DB_QUERY_FAILED, "clsDatabaseConnection", "Erro ao executar SELECT: " & sql
+    Err.Raise ERR_DB_QUERY_FAILED, "clsDatabaseConnection", "Erro ao executar comando: " & sql
     ExecuteQuery = False
 End Function
 
@@ -209,7 +211,7 @@ Friend Function GetLastInsertId() As Long
 
     If ExecuteQuery("SELECT SCOPE_IDENTITY()") Then
         If Not rs Is Nothing And Not rs.EOF Then
-            GetLastInsertId = rs.fields(0).value
+            GetLastInsertId = rs.fields(0).Value
         End If
     End If
     Exit Function
@@ -231,12 +233,12 @@ Private Sub AssembleConnectionString(dbType As DatabaseType)
     Select Case dbType
         Case dbMySQL
             connStr = Join(Array( _
-                    "Driver={" & pDriver & "}", _
-                    "Server=" & pServer, _
-                    "Database=" & pDatabase, _
-                    "User=" & pUserId, _
-                    "Password=" & pPassword, _
-                    "Option=3"), ";")
+                "Driver={" & pDriver & "}", _
+                "Server=" & pServer, _
+                "Database=" & pDatabase, _
+                "User=" & pUserId, _
+                "Password=" & pPassword, _
+                "Option=3"), ";")
             ValidateRequiredFields Array(pDriver, pServer, pDatabase, pUserId, pPassword)
         Case dbSQLServer
             connStr = Join(Array( _
@@ -251,6 +253,15 @@ Private Sub AssembleConnectionString(dbType As DatabaseType)
                 "Provider=" & pProvider, _
                 "Data Source=" & pDataSource), ";")
             ValidateRequiredFields Array(pProvider, pDataSource)
+        Case dbSAPHANA
+            connStr = Join(Array( _
+                "Driver={" & pDriver & "}", _
+                "ServerNode=" & pServer, _
+                "DatabaseName=" & pDatabase, _
+                "UID=" & pUserId, _
+                "PWD=" & pPassword, _
+                "SSLValidateCertificate=No"), ";")
+            ValidateRequiredFields Array(pDriver, pServer, pDatabase, pUserId, pPassword)
         Case Else
             Err.Raise ERR_DB_INVALID_CONNECTION_STRING, "clsDatabaseConnection", "Tipo de banco não suportado: " & dbType
     End Select
