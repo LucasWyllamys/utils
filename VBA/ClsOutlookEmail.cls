@@ -14,10 +14,10 @@ Attribute VB_Exposed = False
 '   - Inclusão de anexos.
 '   - Cópia (CC) e cópia oculta (BCC).
 '   - Substituição de chaves em templates HTML.
-' Versão: 3.0.0
+' Versão: 4.0.0
 ' Autor: Lucas Wyllamys Carmo da Silva
 ' Criado em: 22/10/2025
-' Atualizado em: 04/11/2025
+' Atualizado em: 19/11/2025
 ' Pré-requisitos:
 '   - Ativar bibliotecas
 '       - Microsoft Outlook 16.0 Object Library: No Editor VBA: Ferramentas > Referências > Microsoft Outlook 16.0 Object Library
@@ -35,17 +35,17 @@ Attribute VB_Exposed = False
 '    7. Clique em "Salvar"
 ' Exemplo de uso:
 '    Dim email As ClsOutlookEmail ' Declara como objeto do outlook
-'    Dim chave_valor As Scripting.Dictionary ' Declara como dicionário
+'    Dim chaveValor As Scripting.Dictionary ' Declara como dicionário
 '
 '    Set email = New ClsOutlookEmail ' Instancia o objeto
-'    Set chave_valor = New Scripting.Dictionary ' Instancia o dicionário
+'    Set chaveValor = New Scripting.Dictionary ' Instancia o dicionário
 '
 '    email.ImportHtmlTemplate "C:\Users\U350504\Desktop\Classe de interação com arquivo JSON\Template.htm"
 '
-'    chave_valor.Add "[CHAVE1]", "Olá," ' Adiciona chave-valor
-'    chave_valor.Add "[CHAVE2]", "Mundo!" ' Adiciona chave-valor
+'    chaveValor.Add "[CHAVE1]", "Olá," ' Adiciona chave-valor
+'    chaveValor.Add "[CHAVE2]", "Mundo!" ' Adiciona chave-valor
 '
-'    email.ReplaceKeys chave_valor
+'    email.ReplaceKeys chaveValor
 '    email.SendEmail "remetente@exemplo.com", "destinatario@exemplo.com", "Assunto do E-mail", , , , "C:\Users\U350504\Downloads\Documentacao_Classe_Email_Outlook.pdf"
 ' Observações:
 '   - A assinatura padrão do Outlook é preservada se não for usado um template.
@@ -73,7 +73,7 @@ Private Property Set emailItem(object As Outlook.MailItem): Set pEmailItem = obj
 
 Private Property Get htmlTemplate() As String: htmlTemplate = pHtmlTemplate: End Property
 
-Private Property Let htmlTemplate(value As String): pHtmlTemplate = value: End Property
+Private Property Let htmlTemplate(Value As String): pHtmlTemplate = Value: End Property
 
 '=========================================== Inicialização ===========================================
 
@@ -119,9 +119,9 @@ Public Sub ReplaceKeys(dictKeysValues As Scripting.Dictionary)
     
     On Error GoTo ErrorHandler
     
-    If Not Dictionary Is Nothing Then ' Verifica se o dicionário não está vazio
-        For Each key In Dictionary.Keys   ' Itera sobre todos as chaves do dicionário
-            htmlTemplate = Replace(htmlTemplate, key, Dictionary(key)) ' Substitui os valores das respectivas chaves
+    If Not dictKeysValues Is Nothing Then ' Verifica se o dicionário não está vazio
+        For Each key In dictKeysValues.Keys   ' Itera sobre todos as chaves do dicionário
+            htmlTemplate = Replace(htmlTemplate, key, dictKeysValues(key)) ' Substitui os valores das respectivas chaves
         Next key
     End If
     
@@ -138,7 +138,7 @@ End Sub
 '   - htmlEmailBody (String, opcional): Corpo do e-mail em HTML, utilizado apenas se nenhum template for carregado.
 '   - copy (String, opcional): Endereços de e-mail para cópia (CC), separados por ponto e vírgula.
 '   - hiddenCopy (String, opcional): Endereços de e-mail para cópia oculta (BCC), separados por ponto e vírgula.
-'   - attachmentPath (String, opcional): Caminho completo do arquivo a ser anexado. Para múltiplos arquivos, recomenda-se compactá-los em um único .zip.
+'   - filePaths (Collection, opcional): Caminhos completos dos arquivos a serem anexados.
 '   - showBeforeSend (Boolean, opcional): Define se o e-mail será exibido antes do envio. Esse parâmetro afeta diretamente a aplicação da assinatura padrão do Outlook.
 '       - True: O e-mail é exibido antes do envio. A assinatura padrão do Outlook (ou do template) é aplicada completa, incluindo imagens e formatação.
 '       - False com template HTML: O e-mail é enviado automaticamente. A assinatura padrão pode ser aplicada parcialmente, geralmente sem imagens.
@@ -147,7 +147,7 @@ Public Sub SendEmail(sender As String, recipient As String, subject As String, _
                         Optional htmlEmailBody As String = "", _
                         Optional copy As String = "", _
                         Optional hiddenCopy As String = "", _
-                        Optional attachmentPath As String = "", _
+                        Optional filePaths As Collection = "", _
                         Optional showBeforeSend As Boolean = True)
     Dim corpoEmail As String
     
@@ -170,10 +170,13 @@ Public Sub SendEmail(sender As String, recipient As String, subject As String, _
             .HTMLBody = htmlTemplate
         End If
         
-        If attachmentPath <> "" Then
-            If FileManipulation.FileExists(attachmentPath) Then
-                .Attachments.Add attachmentPath
-            End If
+        If Not filePaths Is Nothing Then
+            Dim i As Integer
+            For i = 1 To filePaths.Count
+                If FileManipulation.FileExists(filePaths(i)) Then
+                    .Attachments.Add filePaths(i)
+                End If
+            Next i
         End If
         
         .Send 'Enviar e-mail

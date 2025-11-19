@@ -143,7 +143,7 @@ End Sub
 
 ' Abre a conexão com o banco
 Friend Function OpenConn() As Boolean
-    'On Error GoTo ErrorHandler
+    On Error GoTo ErrorHandler
 
     Set conn = New ADODB.Connection
     conn.ConnectionTimeout = 30 ' Tempo limite da conexão

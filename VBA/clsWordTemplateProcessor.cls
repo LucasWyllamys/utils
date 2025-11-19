@@ -9,10 +9,10 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 '===========================================================================================================
 ' Classe VBA: clsWordTemplateProcessor - Processador de Templates Word
-' Versão: 1.2.0
+' Versão: 1.5.0
 ' Autor: Lucas Wyllamys Carmo da Silva
 ' Criado em: 04/11/2025
-' Atualizado em: 07/11/2025
+' Atualizado em: 18/11/2025
 '
 ' Descrição:
 '   Esta classe encapsula a lógica de manipulação de documentos Word baseados em templates (.docx),
@@ -66,7 +66,7 @@ Private pTemplatePath As String
 
 Private Const CLASS_NAME As String = "clsWordTemplateProcessor"
 
-'========================================= Enum Tipo de Banco ========================================
+'=============================================== Enum ===============================================
 
 Public Enum FileType
     FileTypePDF = 1
@@ -97,7 +97,7 @@ Private Sub Class_Initialize()
     Exit Sub
 ErrHandler:
     CloseWordApp
-    Err.Raise ERR_WORD_INIT_FAILED, CLASS_NAME, "Erro ao inicializar Word."
+    Err.Raise ERR_WORD_INIT_FAILED, CLASS_NAME, "Erro ao inicializar."
 End Sub
 
 Private Sub Class_Terminate()
@@ -110,7 +110,7 @@ End Sub
 ' Descrição: Importa um template Word
 ' Parâmetros:
 '   - wordTemplatePath: caminho completo do arquivo Word
-Public Sub ImportWordTemplate(wordTemplatePath As String)
+Public Sub ImportTemplate(wordTemplatePath As String)
     If LCase(Right(wordTemplatePath, 5)) <> ".docx" Then
         Err.Raise ERR_FILE_NOT_FOUND, CLASS_NAME, "Arquivo não é um .docx válido: " & wordTemplatePath
     End If
@@ -145,7 +145,7 @@ Public Sub ReplaceKeys(dictKeysValues As Scripting.Dictionary)
     Dim key As Variant
     If wordDoc Is Nothing Then
         CloseWordApp
-        Err.Raise ERR_WRITE_FILE_FAILED, CLASS_NAME, "Template de Word não foi importado."
+        Err.Raise ERR_WRITE_FILE_FAILED, CLASS_NAME, "O template não foi importado."
     End If
     On Error GoTo ErrHandler
     With wordDoc.Content.Find
@@ -170,7 +170,7 @@ Public Sub ReplaceKeys(dictKeysValues As Scripting.Dictionary)
     Exit Sub
 ErrHandler:
     CloseWordApp
-    Err.Raise ERR_WRITE_FILE_FAILED, CLASS_NAME, "Erro ao substituir chaves no template HTML: " & Err.Description
+    Err.Raise ERR_WRITE_FILE_FAILED, CLASS_NAME, "Erro ao substituir chaves no template: " & Err.Description
 End Sub
 
 ' Descrição: Exporta o documento Word como DOCX ou PDF
@@ -178,7 +178,8 @@ End Sub
 '   - targetFolderPath: pasta de destino
 '   - fileName: nome do arquivo sem extensão
 '   - fileType: tipo de arquivo (docx ou pdf)
-Public Sub Export(targetFolderPath As String, fileName As String, FileType As FileType)
+' Retorno: Caminho do arquivo exportado
+Public Function Export(targetFolderPath As String, fileName As String, FileType As FileType) as String
     If wordDoc Is Nothing Then
         Err.Raise ERR_WRITE_FILE_FAILED, CLASS_NAME, "Nenhum documento Word carregado para exportação."
     End If
@@ -189,9 +190,11 @@ Public Sub Export(targetFolderPath As String, fileName As String, FileType As Fi
     Select Case FileType
         Case FileTypeDOCX
             wordDoc.SaveAs targetFolderPath & "\" & fileName & ".docx"
+			Export = targetFolderPath & "\" & fileName & ".docx"
         Case FileTypePDF
             wordDoc.ExportAsFixedFormat OutputFileName:=targetFolderPath & "\" & fileName & ".pdf", ExportFormat:=wdExportFormatPDF   'Exporta em PDF. 17 representa PDF
-        Case Else
+			Export = targetFolderPath & "\" & fileName & ".pdf"
+		Case Else
             Err.Raise ERR_INVALID_FILE_TYPE, CLASS_NAME, "Tipo de arquivo não suportado: " & FileType
     End Select
     Exit Sub

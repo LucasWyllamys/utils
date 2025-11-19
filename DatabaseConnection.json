@@ -1,0 +1,28 @@
+{ 
+    "siaap_db": {
+        "provider": "Microsoft.ACE.OLEDB.12.0",
+        "data_source": "\\\\sigo\\Publico\\Atendimento\\SIAAP\\Contratos\\nclb\\siaap-contratos-nclb-db.accdb"
+    },
+    "smartplan_db": {
+        "driver": "MySQL ODBC 5.1 Driver",
+        "server": "10.208.54.130",
+        "database": "planejamento",
+        "user_id": "clb960708",
+        "password": "clb960708"
+    },
+    "depto_grandes_clientes": {
+        "provider": "SQLOLEDB",
+        "server": "10.188.56.139\\WEAGEMSSQLP01",
+        "database": "DeptoGrandesClientes",
+        "user_id": "usr_service",
+        "password": "Server2020",
+        "tabela": "testeU350504"
+    },
+    "sap_hana": {
+        "driver": "HDBODBC32",
+        "server": "brneo695:30015",
+        "database": "BNP",
+        "user_id": "CLB350504",
+        "password": "Coelba@0001"
+    }
+}
