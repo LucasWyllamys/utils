@@ -14,10 +14,10 @@ Attribute VB_Exposed = False
 '   - Inclusão de anexos.
 '   - Cópia (CC) e cópia oculta (BCC).
 '   - Substituição de chaves em templates HTML.
-' Versão: 4.0.0
+' Versão: 4.1.0
 ' Autor: Lucas Wyllamys Carmo da Silva
 ' Criado em: 22/10/2025
-' Atualizado em: 19/11/2025
+' Atualizado em: 27/11/2025
 ' Pré-requisitos:
 '   - Ativar bibliotecas
 '       - Microsoft Outlook 16.0 Object Library: No Editor VBA: Ferramentas > Referências > Microsoft Outlook 16.0 Object Library
@@ -40,7 +40,7 @@ Attribute VB_Exposed = False
 '    Set email = New ClsOutlookEmail ' Instancia o objeto
 '    Set chaveValor = New Scripting.Dictionary ' Instancia o dicionário
 '
-'    email.ImportHtmlTemplate "C:\Users\U350504\Desktop\Classe de interação com arquivo JSON\Template.htm"
+'    email.ImportTemplate "C:\Users\U350504\Desktop\Classe de interação com arquivo JSON\Template.htm"
 '
 '    chaveValor.Add "[CHAVE1]", "Olá," ' Adiciona chave-valor
 '    chaveValor.Add "[CHAVE2]", "Mundo!" ' Adiciona chave-valor
@@ -49,7 +49,7 @@ Attribute VB_Exposed = False
 '    email.SendEmail "remetente@exemplo.com", "destinatario@exemplo.com", "Assunto do E-mail", , , , "C:\Users\U350504\Downloads\Documentacao_Classe_Email_Outlook.pdf"
 ' Observações:
 '   - A assinatura padrão do Outlook é preservada se não for usado um template.
-'   - O método ImportHtmlTemplate deve ser chamado antes do envio para preparar o corpo do e-mail.
+'   - O método ImportTemplate deve ser chamado antes do envio para preparar o corpo do e-mail.
 '   - Para anexar múltiplos arquivos, recomenda-se compactá-los em um único .zip.
 '===========================================================================================================
 
@@ -57,9 +57,10 @@ Option Explicit
 
 '====================================== Propriedades Privadas ========================================
  
-Private pOutlookApp     As Outlook.Application ' Referência do Outlook
-Private pEmailItem      As Outlook.MailItem ' Referência do E-mail
-Private pHtmlTemplate   As String ' Armazena o HTML do template de e-mail
+Private pOutlookApp         As Outlook.Application ' Referência do Outlook
+Private pEmailItem          As Outlook.MailItem ' Referência do E-mail
+Private pOriginalTemplate   As String ' Armazena o HTML do template de e-mail
+Private pModifiedTemplate   As String ' Armazena o HTML do template de e-mail modificado
 
 '==================================== Métodos Assessores Privados ====================================
 
@@ -71,9 +72,13 @@ Private Property Get emailItem() As Outlook.MailItem: Set emailItem = pEmailItem
 
 Private Property Set emailItem(object As Outlook.MailItem): Set pEmailItem = object: End Property
 
-Private Property Get htmlTemplate() As String: htmlTemplate = pHtmlTemplate: End Property
+Private Property Get originalTemplate() As String: originalTemplate = pOriginalTemplate: End Property
 
-Private Property Let htmlTemplate(Value As String): pHtmlTemplate = Value: End Property
+Private Property Let originalTemplate(Value As String): pOriginalTemplate = Value: End Property
+
+Private Property Get modifiedTemplate() As String: modifiedTemplate = pModifiedTemplate: End Property
+
+Private Property Let modifiedTemplate(Value As String): pModifiedTemplate = Value: End Property
 
 '=========================================== Inicialização ===========================================
 
@@ -90,7 +95,7 @@ End Sub
 Private Sub Class_Terminate()
     Set outlookApp = Nothing
     Set emailItem = Nothing
-    htmlTemplate = ""
+    originalTemplate = ""
 End Sub
 
 '=========================================== Métodos Públicos ===========================================
@@ -98,13 +103,14 @@ End Sub
 ' Descrição: Importa um template HTML de e-mail
 ' Parâmetros:
 '   - htmlTemplatePath: caminho completo do arquivo HTML
-Public Sub ImportHtmlTemplate(htmlTemplatePath As String)
+Public Sub ImportTemplate(htmlTemplatePath As String)
     Dim HtmlContent As String
     
     On Error GoTo ErrorHandler
     
     HtmlContent = FileManipulation.ReadFile(htmlTemplatePath)
-    htmlTemplate = AdjustTemplatePath(htmlTemplatePath, HtmlContent)
+    originalTemplate = AdjustTemplatePath(htmlTemplatePath, HtmlContent)
+    modifiedTemplate = originalTemplate
 
     Exit Sub
 ErrorHandler:
@@ -117,11 +123,13 @@ End Sub
 Public Sub ReplaceKeys(dictKeysValues As Scripting.Dictionary)
     Dim key As Variant
     
+    modifiedTemplate = originalTemplate
+    
     On Error GoTo ErrorHandler
     
     If Not dictKeysValues Is Nothing Then ' Verifica se o dicionário não está vazio
         For Each key In dictKeysValues.Keys   ' Itera sobre todos as chaves do dicionário
-            htmlTemplate = Replace(htmlTemplate, key, dictKeysValues(key)) ' Substitui os valores das respectivas chaves
+            modifiedTemplate = Replace(modifiedTemplate, key, dictKeysValues(key)) ' Substitui os valores das respectivas chaves
         Next key
     End If
     
@@ -164,10 +172,10 @@ Public Sub SendEmail(sender As String, recipient As String, subject As String, _
         If hiddenCopy <> "" Then .BCC = hiddenCopy
         .subject = subject
         
-        If htmlTemplate = "" Then
+        If modifiedTemplate = "" Then
             .HTMLBody = htmlEmailBody & .HTMLBody ' Corpo + Assinatura padrão
         Else
-            .HTMLBody = htmlTemplate
+            .HTMLBody = modifiedTemplate
         End If
         
         If Not filePaths Is Nothing Then
@@ -189,7 +197,8 @@ End Sub
 
 ' Descrição: Reseta o template HTML
 Public Sub ResetTemplate()
-    htmlTemplate = ""
+    originalTemplate = ""
+    modifiedTemplate = ""
 End Sub
 
 '=========================================== Métodos Privados ===========================================
