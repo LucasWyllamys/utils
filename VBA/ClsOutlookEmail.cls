@@ -14,10 +14,10 @@ Attribute VB_Exposed = False
 '   - Inclusão de anexos.
 '   - Cópia (CC) e cópia oculta (BCC).
 '   - Substituição de chaves em templates HTML.
-' Versão: 4.1.0
+' Versão: 4.2.0
 ' Autor: Lucas Wyllamys Carmo da Silva
 ' Criado em: 22/10/2025
-' Atualizado em: 27/11/2025
+' Atualizado em: 21/01/2026
 ' Pré-requisitos:
 '   - Ativar bibliotecas
 '       - Microsoft Outlook 16.0 Object Library: No Editor VBA: Ferramentas > Referências > Microsoft Outlook 16.0 Object Library
@@ -165,7 +165,6 @@ Public Sub SendEmail(sender As String, recipient As String, subject As String, _
     
     With emailItem
         If showBeforeSend Then .Display 'Exibir e-mail
-        
         .SentOnBehalfOfName = sender
         .To = recipient
         If copy <> "" Then .CC = copy
@@ -210,12 +209,13 @@ End Sub
 Private Function AdjustTemplatePath(htmlTemplatePath As String, HtmlContent As String) As String
     Dim templateName As String
     Dim templateFolderPath As String
+    Dim templateNameModify As String
     
     On Error GoTo ErrorHandler
-    templateName = Replace(Replace(Dir(htmlTemplatePath), ".html", "_arquivos"), ".htm", "_arquivos")
     templateFolderPath = Left(htmlTemplatePath, InStrRev(htmlTemplatePath, "\") - 1)
-    
-    AdjustTemplatePath = Replace(HtmlContent, templateName & "/", templateFolderPath & "\" & templateName & "\")
+    templateName = Replace(Replace(Dir(htmlTemplatePath), ".html", "_arquivos"), ".htm", "_arquivos")
+    templateNameModify = Replace(templateName, " ", "%20")
+    AdjustTemplatePath = Replace(HtmlContent, templateNameModify & "/", templateFolderPath & "\" & templateName & "\")
     Exit Function
 ErrorHandler:
     AdjustTemplatePath = HtmlContent ' Retorna o conteúdo original em caso de erro

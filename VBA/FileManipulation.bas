@@ -1,7 +1,15 @@
 Attribute VB_Name = "FileManipulation"
 Option Explicit
 
-'==================================== Funções Públicas ====================================
+'================================================================================
+' Módulo VBA: FileManipulation
+' Versão: 1.1.0
+' Autor: Lucas Wyllamys Carmo da Silva
+' Criado em: 21/01/2026
+' Atualizado em: 23/01/2026
+' Habilitar bibliotecas:
+'   Microsoft Scripting Runtime
+'================================================================================
 
 Public Function FileExists(filePath As String) As Boolean
     Dim fso As Scripting.FileSystemObject
@@ -55,3 +63,20 @@ Public Sub WriteFile(filePath As String, text As String, appendText As Boolean)
 ErrorHandler:
     Err.Raise ERR_SAVE_FILE_FAILED, "FileManipulation", "Erro ao salvar arquivo (" & Err.Number & "): " & Err.Description
 End Sub
+
+' Cria um arquivo de texto caso ele não exista
+Public Sub CreateTextFile(filePath As String)
+    Dim fso As New Scripting.FileSystemObject
+    
+    If Not fso.FileExists(filePath) Then
+        fso.CreateTextFile filePath
+    End If
+End Sub
+
+' Retorna a extensão do arquivo
+Function GetFileExtension(filePath As String) As String
+    Dim fso As Scripting.FileSystemObject
+    GetFileExtension = fso.GetExtensionName(filePath)
+End Function
+
+
