@@ -3,45 +3,34 @@ Option Explicit
 
 '================================================================================
 ' Módulo VBA: Utils
-' Versão: 1.1.0
 ' Autor: Lucas Wyllamys Carmo da Silva
 ' Criado em: 20/01/2026
-' Atualizado em: 21/01/2026
+' Atualizado em: 06/02/2026
+' Versão: 1.2.0
 ' Habilitar bibliotecas:
 '   Microsoft Scripting Runtime
 '   Microsoft WinHTTP Services, version 5.1
 '================================================================================
 
-Public Function OcultarFerramentasExcel1()
-    Application.DisplayFullScreen = True
-    Application.ActiveWindow.DisplayWorkbookTabs = False
-    Application.DisplayFormulaBar = False
-    ActiveWindow.DisplayHeadings = False
-    Application.ActiveWindow.DisplayGridlines = False   ' Desativar grades.
+Public Function AbrirArquivoPowerShell(caminhoArquivo As String)
+    Shell "powershell.exe -File " & caminhoArquivo, vbNormalFocus
 End Function
 
-Public Function OcultarFerramentasExcel2()
-    Application.DisplayFullScreen = True
-    Application.ActiveWindow.DisplayWorkbookTabs = False
-    Application.DisplayFormulaBar = False
-    ActiveWindow.DisplayHeadings = False
-    Application.ActiveWindow.DisplayGridlines = True    ' Ativar grades.
-End Function
-
-Public Function ExibirFerramentasExcel1()
-    Application.DisplayFullScreen = False
-    Application.ActiveWindow.DisplayWorkbookTabs = True
-    Application.DisplayFormulaBar = True
-    ActiveWindow.DisplayHeadings = True
-    Application.ActiveWindow.DisplayGridlines = True
-End Function
-
-Public Function ExibirFerramentasExcel2()
-    ' Application.DisplayFullScreen = False
-    ' Application.ActiveWindow.DisplayWorkbookTabs = True   ' Abas
-    Application.DisplayFormulaBar = True                    ' Barra de fórmulas
-    ActiveWindow.DisplayHeadings = True                     ' Títulos
-    ' Application.ActiveWindow.DisplayGridlines = True      ' Grades
+' Descrição: Substitui chaves no texto por valores do dicionário
+' Parâmetros:
+'   - text: Texto no qual as chaves serão substituídas pelos valores
+'   - keysValues: objeto Scripting.Dictionary com pares chave-valor
+Public Function ReplaceKeys(text As String, keysValues As Scripting.dictionary) As String
+    Dim key As Variant
+    
+    If Not keysValues Is Nothing Then ' Verifica se o dicionário não está vazio
+        If text <> "" Then
+            For Each key In keysValues.Keys   ' Itera sobre todos as chaves do dicionário
+                text = Replace(text, key, keysValues(key)) ' Substitui os valores das respectivas chaves
+            Next key
+            ReplaceKeys = text
+        End If
+    End If
 End Function
 
 Public Function DividirTextoEmColecao( _
@@ -117,7 +106,8 @@ Public Function FormataValor(valor As String, tipo As String) As String
     End If
 End Function
 
-Public Function Aguardar(tempoEspera As String)   'Formato tempoespera: 00:00:00
+Public Function Aguardar(tempoEspera As String)
+    'Formato tempoespera: 00:00:00
     Dim tempo As Double
     tempo = Now + TimeValue(tempoEspera)
     Application.Wait tempo

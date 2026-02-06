@@ -14,10 +14,10 @@ Attribute VB_Exposed = False
 '   - Inclusão de anexos.
 '   - Cópia (CC) e cópia oculta (BCC).
 '   - Substituição de chaves em templates HTML.
-' Versão: 4.2.0
+' Versão: 5.0.0
 ' Autor: Lucas Wyllamys Carmo da Silva
 ' Criado em: 22/10/2025
-' Atualizado em: 21/01/2026
+' Atualizado em: 24/01/2026
 ' Pré-requisitos:
 '   - Ativar bibliotecas
 '       - Microsoft Outlook 16.0 Object Library: No Editor VBA: Ferramentas > Referências > Microsoft Outlook 16.0 Object Library
@@ -45,7 +45,7 @@ Attribute VB_Exposed = False
 '    chaveValor.Add "[CHAVE1]", "Olá," ' Adiciona chave-valor
 '    chaveValor.Add "[CHAVE2]", "Mundo!" ' Adiciona chave-valor
 '
-'    email.ReplaceKeys chaveValor
+'    email.ReplaceKeysBody chaveValor
 '    email.SendEmail "remetente@exemplo.com", "destinatario@exemplo.com", "Assunto do E-mail", , , , "C:\Users\U350504\Downloads\Documentacao_Classe_Email_Outlook.pdf"
 ' Observações:
 '   - A assinatura padrão do Outlook é preservada se não for usado um template.
@@ -57,28 +57,11 @@ Option Explicit
 
 '====================================== Propriedades Privadas ========================================
  
-Private pOutlookApp         As Outlook.Application ' Referência do Outlook
-Private pEmailItem          As Outlook.MailItem ' Referência do E-mail
-Private pOriginalTemplate   As String ' Armazena o HTML do template de e-mail
-Private pModifiedTemplate   As String ' Armazena o HTML do template de e-mail modificado
-
-'==================================== Métodos Assessores Privados ====================================
-
-Private Property Get outlookApp() As Outlook.Application: Set outlookApp = pOutlookApp: End Property
-
-Private Property Set outlookApp(object As Outlook.Application): Set pOutlookApp = object: End Property
-
-Private Property Get emailItem() As Outlook.MailItem: Set emailItem = pEmailItem: End Property
-
-Private Property Set emailItem(object As Outlook.MailItem): Set pEmailItem = object: End Property
-
-Private Property Get originalTemplate() As String: originalTemplate = pOriginalTemplate: End Property
-
-Private Property Let originalTemplate(Value As String): pOriginalTemplate = Value: End Property
-
-Private Property Get modifiedTemplate() As String: modifiedTemplate = pModifiedTemplate: End Property
-
-Private Property Let modifiedTemplate(Value As String): pModifiedTemplate = Value: End Property
+Private outlookApp          As Outlook.Application ' Referência do Outlook
+Private emailItem           As Outlook.MailItem ' Referência do E-mail
+Private htmlContent         As String ' Armazena o conteúdo HTML template de e-mail HTML
+Private tempPath            As String ' Armazena o caminho do template
+Private templateType        As String ' Armazena o tipo de template selecionado
 
 '=========================================== Inicialização ===========================================
 
@@ -93,49 +76,47 @@ ErrorHandler:
 End Sub
 
 Private Sub Class_Terminate()
+    CleanTemplate
     Set outlookApp = Nothing
     Set emailItem = Nothing
-    originalTemplate = ""
 End Sub
 
 '=========================================== Métodos Públicos ===========================================
 
-' Descrição: Importa um template HTML de e-mail
+' Descrição: Importa um template de e-mail .oft ou .htm/.htm
 ' Parâmetros:
-'   - htmlTemplatePath: caminho completo do arquivo HTML
-Public Sub ImportTemplate(htmlTemplatePath As String)
-    Dim HtmlContent As String
-    
-    On Error GoTo ErrorHandler
-    
-    HtmlContent = FileManipulation.ReadFile(htmlTemplatePath)
-    originalTemplate = AdjustTemplatePath(htmlTemplatePath, HtmlContent)
-    modifiedTemplate = originalTemplate
-
-    Exit Sub
-ErrorHandler:
-    Err.Raise ERR_FILE_NOT_FOUND, "ClsEmailOutlook", "Erro ao importar template HTML: " & Err.Description
+'   - TemplatePath: caminho completo do arquivo
+Public Sub ImportTemplate(templatePath As String)
+    If FileManipulation.GetFileExtension(templatePath) = "oft" Then
+        tempPath = templatePath
+        templateType = "oft"
+    ElseIf FileManipulation.GetFileExtension(templatePath) = "htm" Or FileManipulation.GetFileExtension(templatePath) = "html" Then
+        tempPath = templatePath
+        htmlContent = FileManipulation.ReadFile(templatePath)
+        htmlContent = AdjustTemplatePath(templatePath, htmlContent)
+        templateType = "html"
+    Else
+        Err.Raise ERR_INVALID_FILE_TYPE, "ClsEmailOutlook", "Formato de template não suportado. Somente arquivos .oft ou .html são permitidos."
+    End If
 End Sub
 
-' Descrição: Substitui chaves no template HTML por valores do dicionário
+' Descrição: Substitui chaves no template por valores do dicionário
 ' Parâmetros:
 '   - dictKeysValues: objeto Scripting.Dictionary com pares chave-valor
-Public Sub ReplaceKeys(dictKeysValues As Scripting.Dictionary)
+Public Sub ReplaceKeysBody(keysValues As Scripting.Dictionary)
     Dim key As Variant
     
-    modifiedTemplate = originalTemplate
-    
-    On Error GoTo ErrorHandler
-    
-    If Not dictKeysValues Is Nothing Then ' Verifica se o dicionário não está vazio
-        For Each key In dictKeysValues.Keys   ' Itera sobre todos as chaves do dicionário
-            modifiedTemplate = Replace(modifiedTemplate, key, dictKeysValues(key)) ' Substitui os valores das respectivas chaves
-        Next key
+    If Not keysValues Is Nothing Then ' Verifica se o dicionário não está vazio
+        If templateType = "html" Then ' Substitui as chaves pelos valores no conteúdo HTML
+            For Each key In keysValues.Keys   ' Itera sobre todos as chaves do dicionário
+                htmlContent = Replace(htmlContent, key, keysValues(key)) ' Substitui os valores das respectivas chaves
+            Next key
+        Else ' Substitui as chaves pelos valores direto no .HTMLBody
+            For Each key In keysValues.Keys
+                emailItem.HTMLBody = Replace(emailItem.HTMLBody, key, keysValues(key))
+            Next key
+        End If
     End If
-    
-    Exit Sub
-ErrorHandler:
-    Err.Raise ERR_WRITE_FILE_FAILED, "ClsEmailOutlook", "Erro ao substituir chaves no template HTML: " & Err.Description
 End Sub
 
 ' Descrição: Envia um e-mail utilizando o Microsoft Outlook, com suporte a corpo HTML (com ou sem template), anexos, cópia (CC), cópia oculta (BCC) e controle da exibição antes do envio.
@@ -152,16 +133,21 @@ End Sub
 '       - False com template HTML: O e-mail é enviado automaticamente. A assinatura padrão pode ser aplicada parcialmente, geralmente sem imagens.
 '       - False sem template HTML: O e-mail é enviado automaticamente sem assinatura, a menos que o corpo (htmlEmailBody) inclua manualmente uma.
 Public Sub SendEmail(sender As String, recipient As String, subject As String, _
-                        Optional htmlEmailBody As String = "", _
                         Optional copy As String = "", _
                         Optional hiddenCopy As String = "", _
+                        Optional htmlEmailBody As String = "", _
+                        Optional keysValues As Scripting.Dictionary = "", _
                         Optional filePaths As Collection = "", _
-                        Optional showBeforeSend As Boolean = True)
+                        Optional showBeforeSend As Boolean = False)
     Dim corpoEmail As String
     
     On Error GoTo ErrorHandler
-
-    Set emailItem = outlookApp.CreateItem(olMailItem) 'Cria um item de e-mail
+    
+    If templateType = "oft" Then
+        Set emailItem = outlookApp.CreateItemFromTemplate(tempPath) 'Cria um item de e-mail a partir de um template .oft
+    ElseIf templateType = "html" Then
+        Set emailItem = outlookApp.CreateItem(olMailItem) 'Cria um novo item de e-mail
+    End If
     
     With emailItem
         If showBeforeSend Then .Display 'Exibir e-mail
@@ -170,11 +156,21 @@ Public Sub SendEmail(sender As String, recipient As String, subject As String, _
         If copy <> "" Then .CC = copy
         If hiddenCopy <> "" Then .BCC = hiddenCopy
         .subject = subject
-        
-        If modifiedTemplate = "" Then
-            .HTMLBody = htmlEmailBody & .HTMLBody ' Corpo + Assinatura padrão
+            
+        If templateType = "oft" Then
+            If Not keysValues Is Nothing Then
+                ReplaceKeysBody keysValues
+            End If
+        ElseIf templateType = "html" Then
+            If Not keysValues Is Nothing Then
+                ReplaceKeysBody keysValues
+            End If
+            .HTMLBody = htmlContent
         Else
-            .HTMLBody = modifiedTemplate
+            .HTMLBody = htmlEmailBody & .HTMLBody ' Corpo + Assinatura padrão
+            If Not keysValues Is Nothing Then
+                ReplaceKeysBody keysValues
+            End If
         End If
         
         If Not filePaths Is Nothing Then
@@ -195,9 +191,10 @@ ErrorHandler:
 End Sub
 
 ' Descrição: Reseta o template HTML
-Public Sub ResetTemplate()
-    originalTemplate = ""
-    modifiedTemplate = ""
+Public Sub CleanTemplate()
+    htmlContent = ""
+    tempPath = ""
+    templateType = ""
 End Sub
 
 '=========================================== Métodos Privados ===========================================
@@ -206,17 +203,13 @@ End Sub
 ' Parâmetros:
 '   - HtmlTemplatePath: caminho do arquivo HTML
 '   - HtmlContent: conteúdo lido do arquivo
-Private Function AdjustTemplatePath(htmlTemplatePath As String, HtmlContent As String) As String
+Private Function AdjustTemplatePath(htmlTemplatePath As String, htmlContent As String) As String
     Dim templateName As String
     Dim templateFolderPath As String
     Dim templateNameModify As String
     
-    On Error GoTo ErrorHandler
     templateFolderPath = Left(htmlTemplatePath, InStrRev(htmlTemplatePath, "\") - 1)
     templateName = Replace(Replace(Dir(htmlTemplatePath), ".html", "_arquivos"), ".htm", "_arquivos")
     templateNameModify = Replace(templateName, " ", "%20")
-    AdjustTemplatePath = Replace(HtmlContent, templateNameModify & "/", templateFolderPath & "\" & templateName & "\")
-    Exit Function
-ErrorHandler:
-    AdjustTemplatePath = HtmlContent ' Retorna o conteúdo original em caso de erro
+    AdjustTemplatePath = Replace(htmlContent, templateNameModify & "/", templateFolderPath & "\" & templateName & "\")
 End Function
