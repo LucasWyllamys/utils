@@ -2,13 +2,13 @@ VERSION 1.0 CLASS
 BEGIN
   MultiUse = -1  'True
 END
-Attribute VB_Name = "clsExcelTemplateProcessor"
+Attribute VB_Name = "ExcelTemplateProcessor"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 '===========================================================================================================
-' Classe VBA: clsExcelTemplateProcessor - Processador de Templates Excel
+' Classe VBA: ExcelTemplateProcessor - Processador de Templates Excel
 ' Versão: 1.0.0
 ' Autor: Lucas Wyllamys Carmo da Silva
 ' Criado em: 19/11/2025
@@ -150,7 +150,7 @@ Public Sub InsertValues(dictRangesValues As Scripting.Dictionary)
         Err.Raise ERR_WRITE_FILE_FAILED, CLASS_NAME, "Template não importado."
     End If
     On Error GoTo ErrHandler
-    For Each key In dictRangesValues.Keys
+    For Each key In dictRangesValues.keys
         ws.Range(CStr(key)).Value = dictRangesValues(key)
     Next key
     Exit Sub

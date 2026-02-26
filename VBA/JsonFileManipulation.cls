@@ -2,13 +2,13 @@ VERSION 1.0 CLASS
 BEGIN
   MultiUse = -1  'True
 END
-Attribute VB_Name = "clsJsonFileManipulation"
+Attribute VB_Name = "JsonFileManipulation"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 '===========================================================================================================
-' Classe VBA: clsJsonFileManipulation - Manipulação de arquivos JSON
+' Classe VBA: JsonFileManipulation - Manipulação de arquivos JSON
 ' Descrição: Esta classe permite carregar, salvar, limpar e converter objetos JSON no VBA utilizando o JsonConverter e o módulo auxiliar FileManipulation para operações de leitura e escrita de arquivos.
 ' Versão: 2.0.0
 ' Autor: Lucas Wyllamys Carmo da Silva
@@ -39,8 +39,8 @@ Option Explicit
 
 '========================================= Propriedades Privadas ==========================================
 
-Private pJsonFilePath As String
-Private pJsonObj As Scripting.dictionary
+Private pJsonFilePath As String ' Caminho do arquivo JSON
+Private pJsonObj As Scripting.Dictionary ' Objeto JSON importado
 
 '=========================================== Métodos Assessores ===========================================
 
@@ -48,9 +48,9 @@ Private Property Get JsonFilePath() As String: JsonFilePath = pJsonFilePath: End
 
 Private Property Let JsonFilePath(value As String): pJsonFilePath = value: End Property
 
-Public Property Get jsonObj() As Scripting.dictionary: Set jsonObj = pJsonObj: End Property
+Public Property Get jsonObj() As Scripting.Dictionary: Set jsonObj = pJsonObj: End Property
 
-Public Property Set jsonObj(obj As Scripting.dictionary): Set pJsonObj = obj: End Property
+Public Property Set jsonObj(obj As Scripting.Dictionary): Set pJsonObj = obj: End Property
 
 '============================================== Inicialização =============================================
 
@@ -60,7 +60,7 @@ Public Property Set jsonObj(obj As Scripting.dictionary): Set pJsonObj = obj: En
 Public Sub Initialize(filePath As String)
     Dim jsonText As String
     
-    Set pJsonObj = New Scripting.dictionary
+    Set pJsonObj = New Scripting.Dictionary
     
     ' Verifica se o arquivo existe
     If FileManipulation.FileExists(filePath) Then
@@ -79,7 +79,7 @@ End Sub
 
 ' Limpa todo o arquivo JSON
 Public Sub ResetJson()
-    Set jsonObj = New Scripting.dictionary
+    Set jsonObj = New Scripting.Dictionary
 End Sub
 
 ' Retorna o conteúdo do JSON como string formatada

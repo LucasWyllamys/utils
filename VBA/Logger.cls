@@ -2,19 +2,19 @@ VERSION 1.0 CLASS
 BEGIN
   MultiUse = -1  'True
 END
-Attribute VB_Name = "clsLogger"
+Attribute VB_Name = "Logger"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 '===========================================================================================================
-' Classe VBA: clsLogger - Gravação de logs
+' Classe VBA: Logger - Gravação de logs
 ' Descrição: Esta classe permite a gravação de registros em um arquivo de log, com diferentes níveis de severidade
 ' (DEBUG, INFO, WARN, ERROR, CRITICAL), facilitando o diagnóstico e rastreamento de eventos e erros em aplicações VBA.
-' Versão: 1.2.0
+' Versão: 1.3.0
 ' Autor: Lucas Wyllamys Carmo da Silva
 ' Criado em: 17/10/2025
-' Atualizado em: 24/01/2026
+' Atualizado em: 02/02/2026
 ' Pré-requisitos:
 '   - O projeto VBA deve estar salvo em um diretório válido.
 '   - Importar os módulos:
@@ -39,6 +39,16 @@ Attribute VB_Exposed = False
 
 Option Explicit
 
+'=============================================== Constantes ===============================================
+
+Public Enum FileErrorCodes
+    ERR_FILE_NOT_FOUND = 1000 ' Erro de arquivo não encontrado
+    ERR_READ_FILE_FAILED = 1001 ' Erro ao ler arquivo
+    ERR_WRITE_FILE_FAILED = 1002  ' Erro ao escrever no arquivo
+    ERR_SAVE_FILE_FAILED = 1003  ' Erro ao salvar o arquivo
+    ERR_INVALID_FILE_TYPE = 1004  ' Tipo de arquivo inválido
+End Enum
+
 '========================================== Propriedades Privadas ==========================================
 
 Private pLogFilePath As String ' Caminho completo do arquivo de log
@@ -53,10 +63,10 @@ Private Property Let LogFilePath(Value As String): pLogFilePath = Value: End Pro
 
 ' Define o caminho padrão do arquivo de log ao instanciar a classe
 Private Sub Class_Initialize()
-    If ThisWorkbook.Path = "" Then
+    If ThisWorkbook.path = "" Then
         Err.Raise ERR_FILE_NOT_FOUND, "ClsLogger", "O projeto precisa estar salvo para gerar o log (" & Err.Number & "): " & Err.Description ' Lançamento de erro
     Else
-        LogFilePath = ThisWorkbook.Path & "\log.log" ' Define o caminho de arquivo log padrão
+        LogFilePath = ThisWorkbook.path & "\log.log" ' Define o caminho de arquivo log padrão
     End If
 End Sub
 
@@ -136,7 +146,7 @@ Private Function FormatLogLine(kind As String, message As String, Optional step 
     
     logLine = "[" & Format(Now, "yyyy-mm-dd hh:mm:ss") & "][" & kind & "]"
     If step <> 0 And total <> 0 Then
-        logLine = logLine & "[" & Format(step, "0000") & "/" & Format(total, "0000") & "]"
+        logLine = logLine & "[" & step & " de " & total & "]"
     End If
     logLine = logLine & " " & message
     

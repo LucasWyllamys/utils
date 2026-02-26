@@ -2,13 +2,13 @@ VERSION 1.0 CLASS
 BEGIN
   MultiUse = -1  'True
 END
-Attribute VB_Name = "clsWordTemplateProcessor"
+Attribute VB_Name = "WordTemplateProcessor"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 '===========================================================================================================
-' Classe VBA: clsWordTemplateProcessor - Processador de Templates Word
+' Classe VBA: WordTemplateProcessor - Processador de Templates Word
 ' Versão: 1.5.0
 ' Autor: Lucas Wyllamys Carmo da Silva
 ' Criado em: 04/11/2025
@@ -85,7 +85,7 @@ Private Property Set wordDoc(object As Word.Document): Set pWordDoc = object: En
 
 Public Property Get templatePath() As String: templatePath = pTemplatePath: End Property
 
-Public Property Let templatePath(Value As String): pTemplatePath = Value: End Property
+Public Property Let templatePath(value As String): pTemplatePath = value: End Property
 
 '=========================================== Inicialização ===========================================
 
@@ -159,10 +159,10 @@ Public Sub ReplaceKeys(dictKeysValues As Scripting.Dictionary)
         .MatchWildcards = False ' Desativa o uso de curingas como * ou ? na busca
         .MatchSoundsLike = False ' Desativa a busca por palavras que soam como a procurada (útil em inglês)
         .MatchAllWordForms = False ' Desativa a busca por variações da palavra (ex: singular/plural, tempos verbais)
-        For Each key In dictKeysValues.Keys
+        For Each key In dictKeysValues.keys
             If Trim(key) <> "" Then
-                .Text = key
-                .Replacement.Text = dictKeysValues(key)
+                .text = key
+                .Replacement.text = dictKeysValues(key)
                 .Execute Replace:=wdReplaceAll
             End If
         Next key
@@ -179,7 +179,7 @@ End Sub
 '   - fileName: nome do arquivo sem extensão
 '   - fileType: tipo de arquivo (docx ou pdf)
 ' Retorno: Caminho do arquivo exportado
-Public Function Export(targetFolderPath As String, fileName As String, FileType As FileType) as String
+Public Function Export(targetFolderPath As String, fileName As String, FileType As FileType) As String
     If wordDoc Is Nothing Then
         Err.Raise ERR_WRITE_FILE_FAILED, CLASS_NAME, "Nenhum documento Word carregado para exportação."
     End If
@@ -190,11 +190,11 @@ Public Function Export(targetFolderPath As String, fileName As String, FileType 
     Select Case FileType
         Case FileTypeDOCX
             wordDoc.SaveAs targetFolderPath & "\" & fileName & ".docx"
-			Export = targetFolderPath & "\" & fileName & ".docx"
+                        Export = targetFolderPath & "\" & fileName & ".docx"
         Case FileTypePDF
             wordDoc.ExportAsFixedFormat OutputFileName:=targetFolderPath & "\" & fileName & ".pdf", ExportFormat:=wdExportFormatPDF   'Exporta em PDF. 17 representa PDF
-			Export = targetFolderPath & "\" & fileName & ".pdf"
-		Case Else
+                        Export = targetFolderPath & "\" & fileName & ".pdf"
+                Case Else
             Err.Raise ERR_INVALID_FILE_TYPE, CLASS_NAME, "Tipo de arquivo não suportado: " & FileType
     End Select
     Exit Sub

@@ -2,13 +2,13 @@ VERSION 1.0 CLASS
 BEGIN
   MultiUse = -1  'True
 END
-Attribute VB_Name = "clsDatabaseConnection"
+Attribute VB_Name = "DatabaseConnection"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 '===========================================================================================================
-' Classe VBA: clsDatabaseConnection - Conexão com Banco de Dados via ADODB
+' Classe VBA: DatabaseConnection - Conexão com Banco de Dados via ADODB
 ' Versão: 2.4.0
 ' Autor: Lucas Wyllamys Carmo da Silva
 ' Criado em: 29/10/2025
