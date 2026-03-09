@@ -9,32 +9,42 @@ Attribute VB_Name = "PublicConstants"
 
 Option Explicit
 
+Public Enum TypeOfReplacementInWord
+    InContent = 1
+    InAllStories = 2
+End Enum
+
+' ================================= Tipos de Arquivos =================================
+
+Public Enum TemplateFileType
+    pdf = 1
+    DOCX = 2
+    XLSX = 3
+    XLS = 4
+End Enum
+
 ' ================================= Manipulação de Arquivo =================================
+
 Public Enum FileErrorCodes
     ERR_FILE_NOT_FOUND = 1000 ' Erro de arquivo não encontrado
-    ERR_READ_FILE_FAILED = 1001 ' Erro ao ler arquivo
-    ERR_WRITE_FILE_FAILED = 1002  ' Erro ao escrever no arquivo
-    ERR_SAVE_FILE_FAILED = 1003  ' Erro ao salvar o arquivo
-    ERR_INVALID_FILE_TYPE = 1004  ' Tipo de arquivo inválido
+    ERR_INIT_FILE_FAILED = 1001 ' Erro ao iniciar arquivo
+    ERR_OPEN_FILE_FAILED = 1002 ' Erro ao abrir arquivo
+    ERR_READ_FILE_FAILED = 1003 ' Erro ao ler arquivo
+    ERR_WRITE_FILE_FAILED = 1004  ' Erro ao escrever no arquivo
+    ERR_SAVE_FILE_FAILED = 1005  ' Erro ao salvar o arquivo
+    ERR_INVALID_FILE_TYPE = 1006  ' Tipo de arquivo inválido
+    ERR_FOLDER_NOT_FOUND = 1007 ' Pasta não encontrada
 End Enum
 
 ' ================================= Manipulação de E-mail =================================
+
 Public Enum EmailErrorCodes
     ERR_OUTLOOK_INIT_FAILED = 1050 ' Erro ao inicializar o Outlook
     ERR_EMAIL_SEND_FAILED = 1051 ' Erro de envio de e-mail
 End Enum
 
-' ================================= Manipulação do Word =================================
-Public Enum WordErrorCodes
-    ERR_WORD_INIT_FAILED = 1200 ' Erro ao inicializar o Word
-End Enum
-
-' ================================= Manipulação do Excel =================================
-Public Enum ExcelErrorCodes
-    ERR_EXCEL_INIT_FAILED = 1250 ' Erro ao inicializar o Excel
-End Enum
-
 ' ================================= Banco de Dados =================================
+
 Public Enum DBConnectionErrorCodes
     ERR_DB_CONNECTION_FAILED = 1300     ' Falha ao conectar ao banco de dados
     ERR_DB_TIMEOUT = 1301               ' Tempo de conexão excedido

@@ -2,7 +2,7 @@ VERSION 1.0 CLASS
 BEGIN
   MultiUse = -1  'True
 END
-Attribute VB_Name = "JsonFileManipulation"
+Attribute VB_Name = "JsonFileHandler"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
@@ -21,8 +21,8 @@ Attribute VB_Exposed = False
 '       - FileManipulation: https://github.com/LucasWyllamys/utils/blob/main/VBA/FileManipulation.bas
 '       - PublicConstants: https://github.com/LucasWyllamys/utils/blob/main/VBA/PublicConstants.bas
 ' Exemplo de uso:
-'   Dim jsonFile As ClsJsonFileManipulation
-'   Set jsonFile = New ClsJsonFileManipulation
+'   Dim jsonFile As JsonFileHandler
+'   Set jsonFile = New JsonFileHandler
 '
 '   jsonFile.LoadFromFile "C:\Dados\config.json"
 '   Debug.Print jsonFile.GetJsonString
@@ -37,20 +37,24 @@ Attribute VB_Exposed = False
 
 Option Explicit
 
-'========================================= Propriedades Privadas ==========================================
+Private Enum EmailErrorCodes
+    ERR_FILE_NOT_FOUND = 1000 ' Erro de arquivo não encontrado
+End Enum
+
+'========================================= Propriedades ==========================================
 
 Private pJsonFilePath As String ' Caminho do arquivo JSON
-Private pJsonObj As Scripting.Dictionary ' Objeto JSON importado
+Private pJsonObj As Scripting.dictionary ' Objeto JSON importado
 
 '=========================================== Métodos Assessores ===========================================
 
 Private Property Get JsonFilePath() As String: JsonFilePath = pJsonFilePath: End Property
 
-Private Property Let JsonFilePath(value As String): pJsonFilePath = value: End Property
+Private Property Let JsonFilePath(Value As String): pJsonFilePath = Value: End Property
 
-Public Property Get jsonObj() As Scripting.Dictionary: Set jsonObj = pJsonObj: End Property
+Public Property Get jsonObj() As Scripting.dictionary: Set jsonObj = pJsonObj: End Property
 
-Public Property Set jsonObj(obj As Scripting.Dictionary): Set pJsonObj = obj: End Property
+Public Property Set jsonObj(obj As Scripting.dictionary): Set pJsonObj = obj: End Property
 
 '============================================== Inicialização =============================================
 
@@ -60,7 +64,7 @@ Public Property Set jsonObj(obj As Scripting.Dictionary): Set pJsonObj = obj: En
 Public Sub Initialize(filePath As String)
     Dim jsonText As String
     
-    Set pJsonObj = New Scripting.Dictionary
+    Set pJsonObj = New Scripting.dictionary
     
     ' Verifica se o arquivo existe
     If FileManipulation.FileExists(filePath) Then
@@ -71,7 +75,7 @@ Public Sub Initialize(filePath As String)
             Set jsonObj = JsonConverter.ParseJson(jsonText) ' Converte o texto JSON em objeto para ser manipulado no VBA.
         End If
     Else
-        Err.Raise ERR_FILE_NOT_FOUND, "ClsJsonFileManipulation", "Arquivo não encontrado (" & Err.Number & "): " & Err.Description ' Lançamento de erro
+        Err.Raise ERR_FILE_NOT_FOUND, "JsonFileHandler", "Arquivo não encontrado (" & Err.Number & "): " & Err.Description ' Lançamento de erro
     End If
 End Sub
 
@@ -79,7 +83,7 @@ End Sub
 
 ' Limpa todo o arquivo JSON
 Public Sub ResetJson()
-    Set jsonObj = New Scripting.Dictionary
+    Set jsonObj = New Scripting.dictionary
 End Sub
 
 ' Retorna o conteúdo do JSON como string formatada

@@ -37,8 +37,8 @@ Attribute VB_Exposed = False
 '           VBA > Ferramentas > Referências > Microsoft Scripting Runtime
 '
 '   Módulos auxiliares necessários:
-'       • FileManipulation.bas
-'           https://github.com/LucasWyllamys/utils/blob/main/VBA/FileManipulation.bas
+'       • FolderAndFileManipulator.bas
+'           https://github.com/LucasWyllamys/utils/blob/main/VBA/FolderAndFileManipulator.bas
 '
 '
 ' Como criar um template HTML:
@@ -98,21 +98,60 @@ Attribute VB_Exposed = False
 
 Option Explicit
 
-'==================== Constantes ==========================
+'====================================== Constantes =========================================
 
-Private Enum EmailErrorCodes
-    ERR_OUTLOOK_INIT_FAILED = 1050 ' Erro ao inicializar o Outlook
-    ERR_EMAIL_SEND_FAILED = 1051 ' Erro de envio de e-mail
-End Enum
+Private Const CLASS_NAME As String = "OutlookTemplateMailer"
 
 '==================== Propriedades =========================
 
-Private outlookApp As Outlook.Application
-Private emailItem As Outlook.MailItem
+Private pOutlookApp As Outlook.Application
+Private pEmailItem As Outlook.MailItem
 
-Private templatePath As String
-Private templateType As String '"html", "oft" ou ""
-Private htmlContent As String
+Private pTemplatePath As String
+Private pTemplateType As String '"html" ou "oft"
+Private pHtmlContent As String
+
+'==================== Métodos Assessores ====================
+
+Private Property Get outlookApp() As Outlook.Application
+    Set outlookApp = pOutlookApp
+End Property
+
+Private Property Set outlookApp(object As Outlook.Application)
+    Set pOutlookApp = object
+End Property
+
+Private Property Get emailItem() As Outlook.MailItem
+    Set emailItem = pEmailItem
+End Property
+
+Private Property Set emailItem(object As Outlook.MailItem)
+    Set pEmailItem = object
+End Property
+
+Private Property Get templatePath() As String
+    templatePath = pTemplatePath
+End Property
+
+Private Property Let templatePath(value As String)
+    pTemplatePath = value
+End Property
+
+Private Property Get templateType() As String
+    templateType = pTemplateType
+End Property
+
+Private Property Let templateType(value As String)
+    pTemplateType = value
+End Property
+
+Private Property Get htmlContent() As String
+    htmlContent = pHtmlContent
+End Property
+
+Private Property Let htmlContent(value As String)
+    pHtmlContent = value
+End Property
 
 '==================== Inicialização =========================
 
@@ -120,7 +159,7 @@ Private Sub Class_Initialize()
     On Error Resume Next
         Set outlookApp = New Outlook.Application
         If outlookApp Is Nothing Then
-            Err.Raise ERR_OUTLOOK_INIT_FAILED, "ClsEmailOutlook", "Erro ao inicializar Outlook."
+            Err.Raise ERR_OUTLOOK_INIT_FAILED, CLASS_NAME, "Erro ao inicializar Outlook."
         End If
     On Error GoTo 0
 End Sub
@@ -131,71 +170,7 @@ Private Sub Class_Terminate()
 End Sub
 
 '==========================================================
-'                   BLOCO: MÉTODOS PÚBLICOS
-'==========================================================
-
-Public Sub ImportTemplate(ByVal path As String)
-    Dim ext As String
-    ext = LCase(FileManipulation.GetFileExtension(path))
-
-    Select Case ext
-        Case "html", "htm"
-            LoadHtmlTemplate path
-        Case "oft"
-            LoadOftTemplate path
-        Case Else
-            Err.Raise 1001, "ClsEmailOutlook", _
-                "Formato inválido: apenas .oft e .html são suportados."
-    End Select
-End Sub
-
-Public Sub SendEmail( _
-        ByVal sender As String, _
-        ByVal recipient As String, _
-        ByVal subject As String, _
-        Optional ByVal copy As String = "", _
-        Optional ByVal hiddenCopy As String = "", _
-        Optional ByVal htmlEmailBody As String = "", _
-        Optional ByVal keysValues As Scripting.Dictionary = Nothing, _
-        Optional ByVal filePaths As Collection = Nothing, _
-        Optional ByVal showBeforeSend As Boolean = False)
-
-    On Error GoTo EH
-
-    '--- Criação do item de email
-    Set emailItem = CreateEmailItem()
-
-    '--- Cabeçalho
-    ApplyRecipients sender, recipient, copy, hiddenCopy
-    emailItem.subject = ReplaceKeys(subject, keysValues)
-
-    '--- Corpo HTML conforme o tipo de template
-    BuildEmailBody htmlEmailBody, keysValues, showBeforeSend
-
-    '--- Anexos
-    If Not filePaths Is Nothing Then AddAttachments filePaths
-
-    '--- Envio
-    If showBeforeSend Then
-        emailItem.Display
-    Else
-        emailItem.Send
-    End If
-
-    Exit Sub
-
-EH:
-    Err.Raise ERR_EMAIL_SEND_FAILED, "ClsEmailOutlook.SendEmail", Err.Description
-End Sub
-
-Public Sub CleanTemplate()
-    templatePath = ""
-    templateType = ""
-    htmlContent = ""
-End Sub
-
-'==========================================================
-'               BLOCO: MÉTODOS PRIVADOS
+'               MÉTODOS PRIVADOS
 '==========================================================
 
 '-------------- Template OFT -------------------
@@ -209,7 +184,7 @@ Private Sub LoadHtmlTemplate(ByVal path As String)
     templatePath = path
     templateType = "html"
 
-    htmlContent = FileManipulation.ReadFile(path)
+    htmlContent = FolderAndFileManipulator.ReadFile(path)
     htmlContent = FixRelativePaths(path, htmlContent)
 End Sub
 
@@ -244,15 +219,12 @@ Private Sub BuildEmailBody( _
         ByVal showBefore As Boolean)
 
     Select Case templateType
-
         Case "html"
             Dim htmlFinal As String
             htmlFinal = ReplaceKeys(htmlContent, keys)
             emailItem.HTMLBody = htmlFinal
-
         Case "oft"
             ReplaceKeysInMailBody keys
-
         Case Else 'Sem template
             If showBefore Then
                 'Outlook gerencia assinatura
@@ -305,8 +277,76 @@ End Function
 Private Sub AddAttachments(ByVal files As Collection)
     Dim i As Integer
     For i = 1 To files.Count
-        If FileManipulation.FileExists(files(i)) Then
+        If FolderAndFileManipulator.FileExists(files(i)) Then
             emailItem.Attachments.Add files(i)
         End If
     Next i
+End Sub
+
+'==========================================================
+'                   MÉTODOS PÚBLICOS
+'==========================================================
+
+Public Sub ImportTemplate(ByVal oftHtmlTemplatePath As String)
+    Dim ext As String
+    
+    If Not FolderAndFileManipulator.FileExists(oftHtmlTemplatePath) Then
+        Err.Raise ERR_FILE_NOT_FOUND, CLASS_NAME, "Arquivo de template não encontrado."
+    End If
+    
+    ext = FolderAndFileManipulator.GetFileExtension(oftHtmlTemplatePath)
+    
+    Select Case ext
+        Case "html", "htm"
+            LoadHtmlTemplate oftHtmlTemplatePath
+        Case "oft"
+            LoadOftTemplate oftHtmlTemplatePath
+        Case Else
+            Err.Raise ERR_INVALID_FILE_TYPE, CLASS_NAME, "Formato inválido: apenas .oft e .html são suportados."
+    End Select
+End Sub
+
+Public Sub SendEmail( _
+        ByVal sender As String, _
+        ByVal recipient As String, _
+        ByVal subject As String, _
+        Optional ByVal copy As String = "", _
+        Optional ByVal hiddenCopy As String = "", _
+        Optional ByVal htmlEmailBody As String = "", _
+        Optional ByVal keysValues As Scripting.Dictionary = Nothing, _
+        Optional ByVal filePaths As Collection = Nothing, _
+        Optional ByVal showBeforeSend As Boolean = False)
+
+    On Error GoTo EH
+
+    '--- Criação do item de email
+    Set emailItem = CreateEmailItem()
+
+    '--- Cabeçalho
+    ApplyRecipients sender, recipient, copy, hiddenCopy
+    emailItem.subject = ReplaceKeys(subject, keysValues)
+
+    '--- Corpo HTML conforme o tipo de template
+    BuildEmailBody htmlEmailBody, keysValues, showBeforeSend
+
+    '--- Anexos
+    If Not filePaths Is Nothing Then AddAttachments filePaths
+
+    '--- Envio
+    If showBeforeSend Then
+        emailItem.Display
+    Else
+        emailItem.Send
+    End If
+
+    Exit Sub
+
+EH:
+    Err.Raise ERR_EMAIL_SEND_FAILED, "OutlookTemplateMailer.SendEmail", Err.Description
+End Sub
+
+Public Sub CleanTemplate()
+    templatePath = ""
+    templateType = ""
+    htmlContent = ""
 End Sub

@@ -67,11 +67,11 @@ Private pTemplatePath As String
 Private Const CLASS_NAME As String = "clsExcelTemplateProcessor"
 
 '=============================================== Enum ===============================================
-
-Public Enum FileType
-    FileTypePDF = 1
-    FileTypeXLSX = 2
-End Enum
+'
+'Public Enum FileType
+'    FileTypePDF = 1
+'    FileTypeXLSX = 2
+'End Enum
 
 '========================================= Métodos Assessores ========================================
 
@@ -95,8 +95,8 @@ Public Property Get templatePath() As String
     templatePath = pTemplatePath
 End Property
 
-Public Property Let templatePath(Value As String)
-    pTemplatePath = Value
+Public Property Let templatePath(value As String)
+    pTemplatePath = value
 End Property
 
 '============================================= Inicialização =============================================
@@ -104,6 +104,20 @@ End Property
 Private Sub Class_Terminate()
     CloseWb
     EnableExcelUpdates
+End Sub
+
+'=========================================== Métodos Privados ===========================================
+
+' Descrição: Desativa atualizações visuais e cálculos automáticos do Excel para melhorar desempenho.
+Private Sub DisableExcelUpdates()
+    Application.ScreenUpdating = False
+    'Application.Calculation = xlCalculationManual
+End Sub
+
+' Descrição: Reativa atualizações visuais e cálculos automáticos do Excel.
+Private Sub EnableExcelUpdates()
+    Application.ScreenUpdating = True
+    'Application.Calculation = xlCalculationAutomatic
 End Sub
 
 '=========================================== Métodos Públicos ===========================================
@@ -151,7 +165,7 @@ Public Sub InsertValues(dictRangesValues As Scripting.Dictionary)
     End If
     On Error GoTo ErrHandler
     For Each key In dictRangesValues.keys
-        ws.Range(CStr(key)).Value = dictRangesValues(key)
+        ws.Range(CStr(key)).value = dictRangesValues(key)
     Next key
     Exit Sub
 ErrHandler:
@@ -212,18 +226,4 @@ Public Sub CloseWb()
     If Not wb Is Nothing Then wb.Close SaveChanges:=False
     Set wb = Nothing
     EnableExcelUpdates
-End Sub
-
-'=========================================== Métodos Privados ===========================================
-
-' Descrição: Desativa atualizações visuais e cálculos automáticos do Excel para melhorar desempenho.
-Private Sub DisableExcelUpdates()
-    Application.ScreenUpdating = False
-    'Application.Calculation = xlCalculationManual
-End Sub
-
-' Descrição: Reativa atualizações visuais e cálculos automáticos do Excel.
-Private Sub EnableExcelUpdates()
-    Application.ScreenUpdating = True
-    'Application.Calculation = xlCalculationAutomatic
 End Sub

@@ -18,7 +18,7 @@ Attribute VB_Exposed = False
 ' Pré-requisitos:
 '   - O projeto VBA deve estar salvo em um diretório válido.
 '   - Importar os módulos:
-'       - FileManipulation: https://github.com/LucasWyllamys/utils/blob/main/VBA/FileManipulation.bas
+'       - FolderAndFileManipulator: https://github.com/LucasWyllamys/utils/blob/main/VBA/FolderAndFileManipulator.bas
 '       - PublicConstants: https://github.com/LucasWyllamys/utils/blob/main/VBA/PublicConstants.bas
 ' Exemplo de uso:
 '   Dim logger As clsLogger
@@ -49,6 +49,10 @@ Public Enum FileErrorCodes
     ERR_INVALID_FILE_TYPE = 1004  ' Tipo de arquivo inválido
 End Enum
 
+'====================================== Constantes =========================================
+
+Private Const CLASS_NAME As String = "Logger"
+
 '========================================== Propriedades Privadas ==========================================
 
 Private pLogFilePath As String ' Caminho completo do arquivo de log
@@ -57,27 +61,47 @@ Private pLogFilePath As String ' Caminho completo do arquivo de log
 
 Private Property Get LogFilePath() As String: LogFilePath = pLogFilePath: End Property
 
-Private Property Let LogFilePath(Value As String): pLogFilePath = Value: End Property
+Private Property Let LogFilePath(value As String): pLogFilePath = value: End Property
 
 '=========================================== Inicialização ===========================================
 
 ' Define o caminho padrão do arquivo de log ao instanciar a classe
 Private Sub Class_Initialize()
     If ThisWorkbook.path = "" Then
-        Err.Raise ERR_FILE_NOT_FOUND, "ClsLogger", "O projeto precisa estar salvo para gerar o log (" & Err.Number & "): " & Err.Description ' Lançamento de erro
+        Err.Raise ERR_FILE_NOT_FOUND, CLASS_NAME, "O projeto precisa estar salvo para gerar o log (" & Err.Number & "): " & Err.Description ' Lançamento de erro
     Else
         LogFilePath = ThisWorkbook.path & "\log.log" ' Define o caminho de arquivo log padrão
     End If
+End Sub
+
+'=========================================== Métodos Privados ===========================================
+
+' Monta a linha de log formatada com data, tipo, etapa e mensagem
+Private Function FormatLogLine(kind As String, message As String, Optional step As Long = 0, Optional total As Long = 0) As String
+    Dim logLine As String
+    
+    logLine = "[" & Format(Now, "yyyy-mm-dd hh:mm:ss") & "][" & kind & "]"
+    If step <> 0 And total <> 0 Then
+        logLine = logLine & "[" & step & " de " & total & "]"
+    End If
+    logLine = logLine & " " & message
+    
+    FormatLogLine = logLine
+End Function
+
+' Escreve a mensagem no arquivo de log
+Private Sub Record(message As String)
+    FolderAndFileManipulator.WriteFile LogFilePath, message, True
 End Sub
 
 '=========================================== Métodos Públicos ===========================================
 
 ' Permite definir um caminho personalizado para o arquivo de log
 Public Sub SetLogFilePath(Optional filePath As String = "")
-    If FileManipulation.FileExists(filePath) Then
+    If FolderAndFileManipulator.FileExists(filePath) Then
         LogFilePath = filePath
     Else
-        Err.Raise ERR_FILE_NOT_FOUND, "ClsLogger", "Arquivo não encontrado (" & Err.Number & "): " & Err.Description
+        Err.Raise ERR_FILE_NOT_FOUND, CLASS_NAME, "Arquivo não encontrado (" & Err.Number & "): " & Err.Description
     End If
 End Sub
 
@@ -137,24 +161,3 @@ End Sub
 Public Sub CriticalLog(message As String, Optional step As Long, Optional total As Long)
     Record FormatLogLine("CRITICAL", message, step, total)
 End Sub
-
-'=========================================== Métodos Privados ===========================================
-
-' Monta a linha de log formatada com data, tipo, etapa e mensagem
-Private Function FormatLogLine(kind As String, message As String, Optional step As Long = 0, Optional total As Long = 0) As String
-    Dim logLine As String
-    
-    logLine = "[" & Format(Now, "yyyy-mm-dd hh:mm:ss") & "][" & kind & "]"
-    If step <> 0 And total <> 0 Then
-        logLine = logLine & "[" & step & " de " & total & "]"
-    End If
-    logLine = logLine & " " & message
-    
-    FormatLogLine = logLine
-End Function
-
-' Escreve a mensagem no arquivo de log
-Private Sub Record(message As String)
-    FileManipulation.WriteFile LogFilePath, message, True
-End Sub
-

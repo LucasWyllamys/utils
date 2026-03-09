@@ -10,16 +10,16 @@ Option Explicit
 ' Importar classe: ClsLogger: https://github.com/LucasWyllamys/utils/blob/main/VBA/clsLogger.cls
 '================================================================================
 
-Sub inicioLog(caminhoLog As String, log As Logger, qtdItens As Long, ti As Date, sistema As String)
+Public Sub inicioLog(caminhoLog As String, log As Logger, qtdItens As Long, ti As Date, sistema As String)
     Dim psPID As Long
     
-    FileManipulation.CreateTextFile caminhoLog
-    Set log = New clsLogger
+    FolderAndFileManipulator.CreateTextFile caminhoLog
+    Set log = New Logger
     log.SetLogFilePath caminhoLog
     
-    psPID = Planilha4.Range("A2").Value ' Captura o PID da janela do PowerSheel aberta anteriormente
-    Planilha4.Range("A2").Value = log.CloseLogInRealTimeWMI(psPID) ' Fecha a janela do PowerSheel aberta anteriormente
-    Planilha4.Range("A2").Value = log.OpenLogInRealTime(10000) ' Abre uma janela do PowerSheel com as última 1000 linhas e atualiza o PID na célula do Excel
+    psPID = Planilha4.Range("A2").value ' Captura o PID da janela do PowerSheel aberta anteriormente
+    Planilha4.Range("A2").value = log.CloseLogInRealTimeWMI(psPID) ' Fecha a janela do PowerSheel aberta anteriormente
+    Planilha4.Range("A2").value = log.OpenLogInRealTime(10000) ' Abre uma janela do PowerSheel com as última 1000 linhas e atualiza o PID na célula do Excel
     
     Aguardar "00:00:05"
     
@@ -34,7 +34,7 @@ Sub inicioLog(caminhoLog As String, log As Logger, qtdItens As Long, ti As Date,
     End With
 End Sub
 
-Sub linhaLog(log As Logger, linha As Long, qtdItens As Long, status As String, template As String)
+Public Sub linhaLog(log As Logger, linha As Long, qtdItens As Long, status As String, template As String)
     With log
         .UnformattedMessage ""
         .InfoLog "", linha - 4, qtdItens
@@ -44,7 +44,7 @@ Sub linhaLog(log As Logger, linha As Long, qtdItens As Long, status As String, t
     End With
 End Sub
 
-Sub fimLog(log As Logger, qtdItens As Long, ti As Date, num_executados As Long, num_naoExecutados As Long, num_falhas As Long)
+Public Sub fimLog(log As Logger, qtdItens As Long, ti As Date, num_executados As Long, num_naoExecutados As Long, num_falhas As Long)
     With log
         .UnformattedMessage ""
         .UnformattedMessage "------------------------------------------------------------------------"

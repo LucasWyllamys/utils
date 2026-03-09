@@ -31,9 +31,6 @@ Attribute VB_Exposed = False
 '       - Microsoft ActiveX Data Objects 6.1 Library
 '         No Editor VBA: Ferramentas > Referências > Microsoft ActiveX Data Objects 6.1 Library
 '
-'   - Importar os módulos auxiliares:
-'       - PublicConstants: https://github.com/LucasWyllamys/utils/blob/main/VBA/PublicConstants.bas
-'
 ' Observações:
 '   - A propriedade `rs` armazena o resultado de consultas SELECT.
 '   - A propriedade `cmd` é usada internamente para executar comandos SQL.
@@ -68,6 +65,23 @@ Attribute VB_Exposed = False
 
 Option Explicit
 
+'======================================== Enum ========================================
+
+Public Enum DBConnectionErrorCodes
+    ERR_DB_CONNECTION_FAILED = 1300     ' Falha ao conectar ao banco de dados
+    ERR_DB_TIMEOUT = 1301               ' Tempo de conexão excedido
+    ERR_DB_AUTHENTICATION_FAILED = 1302  ' Falha na autenticação com o banco de dados
+    ERR_DB_QUERY_FAILED = 1303           ' Erro ao executar a consulta SQL
+    ERR_DB_DISCONNECTED = 1304           ' Conexão com o banco de dados foi perdida
+    ERR_DB_DRIVER_NOT_FOUND = 1305      ' Driver de banco de dados não encontrado
+    ERR_DB_INVALID_CONNECTION_STRING = 1306 ' String de conexão inválida
+    ERR_DB_TRANSACTION_FAILED = 1307     ' Falha na transação com o banco de dados
+End Enum
+
+'====================================== Constantes =========================================
+
+Private Const CLASS_NAME As String = "DatabaseConnection"
+
 '====================================== Propriedades Privadas ========================================
 
 Private pConn As ADODB.Connection
@@ -83,6 +97,24 @@ Private pProvider As String
 Private pDriver As String
 Private pConnStr As String
 
+'========================================= Métodos Assessores ========================================
+
+Private Property Get conn() As ADODB.Connection: Set conn = pConn: End Property
+
+Private Property Set conn(object As ADODB.Connection): Set pConn = object: End Property
+
+Friend Property Get rs() As ADODB.Recordset: Set rs = pRs: End Property
+
+Friend Property Set rs(object As ADODB.Recordset): Set pRs = object: End Property
+
+Private Property Get cmd() As ADODB.Command: Set cmd = pCmd: End Property
+
+Private Property Set cmd(object As ADODB.Command): Set pCmd = object: End Property
+
+Friend Property Get connStr() As String: connStr = pConnStr: End Property
+
+Private Property Let connStr(value As String): pConnStr = value: End Property
+
 '========================================= Enum Tipo de Banco ========================================
 
 Public Enum DatabaseType
@@ -91,27 +123,6 @@ Public Enum DatabaseType
     dbAccess = 3
     dbSAPHANA = 4
 End Enum
-
-'========================================= Métodos Assessores ========================================
-
-Private Property Get conn() As ADODB.Connection: Set conn = pConn: End Property
-
-Private Property Set conn(object As ADODB.Connection): Set pConn = object: End Property
-
-
-Friend Property Get rs() As ADODB.Recordset: Set rs = pRs: End Property
-
-Friend Property Set rs(object As ADODB.Recordset): Set pRs = object: End Property
-
-
-Private Property Get cmd() As ADODB.Command: Set cmd = pCmd: End Property
-
-Private Property Set cmd(object As ADODB.Command): Set pCmd = object: End Property
-
-
-Friend Property Get connStr() As String: connStr = pConnStr: End Property
-
-Private Property Let connStr(Value As String): pConnStr = Value: End Property
 
 '=========================================== Inicialização ===========================================
 
@@ -137,93 +148,6 @@ End Sub
 
 Private Sub Class_Terminate()
     CloseConn
-End Sub
-
-'=========================================== Métodos Públicos ===========================================
-
-' Abre a conexão com o banco
-Friend Function OpenConn() As Boolean
-    On Error GoTo ErrorHandler
-
-    Set conn = New ADODB.Connection
-    conn.ConnectionTimeout = 30 ' Tempo limite da conexão
-    conn.Open connStr
-    
-    OpenConn = True
-    Exit Function
-ErrorHandler:
-    Err.Raise ERR_DB_CONNECTION_FAILED, "clsDatabaseConnection", "Falha ao conectar ao banco de dados: " & connStr
-    OpenConn = False
-End Function
-
-' Verifica se o banco de dados está conectado
-Friend Function IsConnected() As Boolean
-    IsConnected = Not conn Is Nothing And conn.State = adStateOpen
-End Function
-
-' Use os comando SELECT para retornar uma Recordset na propriedade rs
-Friend Function ExecuteQuery(ByVal sql As String) As Boolean
-
-    If Not IsConnected Then Err.Raise ERR_DB_CONNECTION_FAILED, "clsDatabaseConnection", "Conexão NÃO está ativa."
-    
-    On Error GoTo ErrorHandler
-    
-    Set cmd = New ADODB.Command
-    cmd.CommandTimeout = 60 ' Tempo limite para execução do SELECT
-    With cmd
-        .ActiveConnection = conn
-        .CommandType = adCmdText
-        .CommandText = sql
-        Set rs = .Execute
-    End With
-    
-    ExecuteQuery = True
-    Exit Function
-ErrorHandler:
-    Err.Raise ERR_DB_QUERY_FAILED, "clsDatabaseConnection", "Erro ao executar comando: " & sql
-    ExecuteQuery = False
-End Function
-
-' Use os comandos INSERT, UPDATE, DELETE, retorna o ID do registro (exceto para o DELETE)
-Friend Sub ExecuteNonQuery(ByVal sql As String)
-    On Error GoTo ErrorHandler
-    
-    If Not IsConnected Then Err.Raise ERR_DB_CONNECTION_FAILED, "clsDatabaseConnection", "Conexão NÃO está ativa."
-    
-    Set cmd = New ADODB.Command
-    cmd.CommandTimeout = 60 ' Tempo limite para INSERT/UPDATE/DELETE
-    With cmd
-        .ActiveConnection = conn
-        .CommandType = adCmdText
-        .CommandText = sql
-    End With
-    
-    cmd.Execute
-    Exit Sub
-ErrorHandler:
-    Err.Raise ERR_DB_QUERY_FAILED, "clsDatabaseConnection", "Erro ao executar comando SQL: " & sql
-End Sub
-
-' Retorna o ID do ultimo registro inserido
-Friend Function GetLastInsertId() As Long
-    On Error GoTo ErrorHandler
-    If Not IsConnected Then Err.Raise ERR_DB_CONNECTION_FAILED, "clsDatabaseConnection", "Conexão não está ativa."
-
-    If ExecuteQuery("SELECT SCOPE_IDENTITY()") Then
-        If Not rs Is Nothing And Not rs.EOF Then
-            GetLastInsertId = rs.fields(0).Value
-        End If
-    End If
-    Exit Function
-ErrorHandler:
-    GetLastInsertId = -1
-End Function
-
-' Fecha a conexão com a recordset e o banco de dados
-Friend Sub CloseConn()
-    CloseCmd
-    CloseRs
-    CloseDb
 End Sub
 
 '=========================================== Métodos Privados ===========================================
@@ -263,7 +187,7 @@ Private Sub AssembleConnectionString(dbType As DatabaseType)
                 "SSLValidateCertificate=No"), ";")
             ValidateRequiredFields Array(pDriver, pServer, pDatabase, pUserId, pPassword)
         Case Else
-            Err.Raise ERR_DB_INVALID_CONNECTION_STRING, "clsDatabaseConnection", "Tipo de banco não suportado: " & dbType
+            Err.Raise ERR_DB_INVALID_CONNECTION_STRING, CLASS_NAME, "Tipo de banco não suportado: " & dbType
     End Select
 End Sub
 
@@ -272,7 +196,7 @@ Private Sub ValidateRequiredFields(ByVal fields As Variant)
     
     For i = LBound(fields) To UBound(fields)
         If Trim(fields(i)) = "" Then
-            Err.Raise ERR_DB_INVALID_CONNECTION_STRING, "clsDatabaseConnection", "String de conexão inválida: " & connStr
+            Err.Raise ERR_DB_INVALID_CONNECTION_STRING, CLASS_NAME, "String de conexão inválida: " & connStr
         End If
     Next i
 End Sub
@@ -296,4 +220,91 @@ End Sub
 ' Fecha a conexão com o Command
 Private Sub CloseCmd()
     If Not cmd Is Nothing Then Set cmd = Nothing
+End Sub
+
+'=========================================== Métodos Públicos ===========================================
+
+' Abre a conexão com o banco
+Friend Function OpenConn() As Boolean
+    On Error GoTo ErrorHandler
+
+    Set conn = New ADODB.Connection
+    conn.ConnectionTimeout = 30 ' Tempo limite da conexão
+    conn.Open connStr
+    
+    OpenConn = True
+    Exit Function
+ErrorHandler:
+    Err.Raise ERR_DB_CONNECTION_FAILED, CLASS_NAME, "Falha ao conectar ao banco de dados: " & connStr
+    OpenConn = False
+End Function
+
+' Verifica se o banco de dados está conectado
+Friend Function IsConnected() As Boolean
+    IsConnected = Not conn Is Nothing And conn.State = adStateOpen
+End Function
+
+' Use os comando SELECT para retornar uma Recordset na propriedade rs
+Friend Function ExecuteQuery(ByVal sql As String) As Boolean
+
+    If Not IsConnected Then Err.Raise ERR_DB_CONNECTION_FAILED, CLASS_NAME, "Conexão NÃO está ativa."
+    
+    On Error GoTo ErrorHandler
+    
+    Set cmd = New ADODB.Command
+    cmd.CommandTimeout = 60 ' Tempo limite para execução do SELECT
+    With cmd
+        .ActiveConnection = conn
+        .CommandType = adCmdText
+        .CommandText = sql
+        Set rs = .Execute
+    End With
+    
+    ExecuteQuery = True
+    Exit Function
+ErrorHandler:
+    Err.Raise ERR_DB_QUERY_FAILED, CLASS_NAME, "Erro ao executar comando: " & sql
+    ExecuteQuery = False
+End Function
+
+' Use os comandos INSERT, UPDATE, DELETE, retorna o ID do registro (exceto para o DELETE)
+Friend Sub ExecuteNonQuery(ByVal sql As String)
+    On Error GoTo ErrorHandler
+    
+    If Not IsConnected Then Err.Raise ERR_DB_CONNECTION_FAILED, CLASS_NAME, "Conexão NÃO está ativa."
+    
+    Set cmd = New ADODB.Command
+    cmd.CommandTimeout = 60 ' Tempo limite para INSERT/UPDATE/DELETE
+    With cmd
+        .ActiveConnection = conn
+        .CommandType = adCmdText
+        .CommandText = sql
+    End With
+    
+    cmd.Execute
+    Exit Sub
+ErrorHandler:
+    Err.Raise ERR_DB_QUERY_FAILED, CLASS_NAME, "Erro ao executar comando SQL: " & sql
+End Sub
+
+' Retorna o ID do ultimo registro inserido
+Friend Function GetLastInsertId() As Long
+    On Error GoTo ErrorHandler
+    If Not IsConnected Then Err.Raise ERR_DB_CONNECTION_FAILED, CLASS_NAME, "Conexão não está ativa."
+
+    If ExecuteQuery("SELECT SCOPE_IDENTITY()") Then
+        If Not rs Is Nothing And Not rs.EOF Then
+            GetLastInsertId = rs.fields(0).value
+        End If
+    End If
+    Exit Function
+ErrorHandler:
+    GetLastInsertId = -1
+End Function
+
+' Fecha a conexão com a recordset e o banco de dados
+Friend Sub CloseConn()
+    CloseCmd
+    CloseRs
+    CloseDb
 End Sub
