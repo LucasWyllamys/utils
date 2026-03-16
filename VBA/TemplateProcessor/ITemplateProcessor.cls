@@ -15,13 +15,15 @@ End Sub
 Public Function Export( _
     ByVal targetFolderPath As String, _
     ByVal fileName As String, _
-    ByVal FileType As TemplateFileType, _
+    ByVal fileType As ExportFileType, _
     Optional ByVal keysValues As Scripting.Dictionary = Nothing) As String
 End Function
 
+' Reseta o documento carregado
 Public Sub ResetTemplate()
 End Sub
 
+' Finaliza completamente a instância
 Public Sub Finish()
 End Sub
 

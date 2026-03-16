@@ -44,7 +44,7 @@ Attribute VB_Exposed = False
 '   • A propriedade privada `pWordApp` mantém a instância da aplicação Word.
 '   • A propriedade privada `pWordDoc` referencia o documento atualmente carregado.
 '   • Esta classe opera sempre com um documento por vez.
-'   • A enumeração `TemplateFileType` define os formatos suportados (DOCX ou PDF).
+'   • A enumeração `ExportFileType` define os formatos suportados (DOCX ou PDF).
 '   • A substituição de chaves neste processador ocorre somente no conteúdo principal do documento,
 '     não abrangendo cabeçalhos, rodapés ou shapes — otimização proposital para desempenho.
 '
@@ -146,29 +146,7 @@ End Sub
 
 ' Destrutor da classe — executa quando o objeto é destruído via Set obj = Nothing
 Private Sub Class_Terminate()
-    CloseWordDoc
-    CloseWordApp
-End Sub
-
-' Finaliza completamente a instância do Word
-Private Sub CloseWordApp()
-    On Error Resume Next
-    CloseWordDoc
-
-    If Not wordApp Is Nothing Then
-        wordApp.Quit SaveChanges:=False     ' Fecha o Word sem salvar nada
-        Set wordApp = Nothing               ' Libera memória
-    End If
-End Sub
-
-' Fecha o documento atual (se existir)
-Private Sub CloseWordDoc()
-    On Error Resume Next
-
-    If Not wordDoc Is Nothing Then
-        wordDoc.Close SaveChanges:=False
-        Set wordDoc = Nothing
-    End If
+    ITemplateProcessor_Finish
 End Sub
 
 '============================= Implementação da Interface ======================
@@ -193,7 +171,7 @@ Private Sub ITemplateProcessor_ImportTemplate(ByVal wordTemplatePath As String)
                     ReadOnly:=True, _
                     AddToRecentFiles:=False)
 
-            ' Caso excepcional: documento não abriu
+            ' Caso excepcional: arquivo não abriu
             If wordDoc Is Nothing Then
                 Err.Raise ERR_OPEN_FILE_FAILED, CLASS_NAME & ".ImportTemplate", "Falha ao carregar o template."
             End If
@@ -209,25 +187,35 @@ End Sub
 Private Function ITemplateProcessor_Export( _
     ByVal targetFolderPath As String, _
     ByVal fileName As String, _
-    ByVal FlTp As TemplateFileType, _
+    ByVal fileType As ExportFileType, _
     Optional ByVal keysValues As Scripting.Dictionary = Nothing) As String
 
     Dim outPath As String
     Dim safeName As String
+    
+    ' Verifica o tipo de arquivo de exportação
+    If Not (fileType = flDOCX Or fileType = flPDF) Then
+        ITemplateProcessor_ResetTemplate
+        Err.Raise ERR_INVALID_FILE_TYPE, CLASS_NAME & ".Export", "Tipo de exportação inválido. Tipos de arquivos suportados .docx ou .pdf"
+    End If
 
     ' Verifica pasta destino
     If Not FolderAndFileManipulator.FolderExists(targetFolderPath) Then
+        ITemplateProcessor_ResetTemplate
         Err.Raise ERR_FOLDER_NOT_FOUND, CLASS_NAME & ".Export", "A pasta destino não existe!"
     End If
 
     ' Verifica se existe documento carregado
     If wordDoc Is Nothing Then
+        ITemplateProcessor_ResetTemplate
         Err.Raise ERR_FILE_NOT_FOUND, CLASS_NAME & ".Export", "Nenhum template carregado."
     End If
 
-    ' Sanitiza o nome do arquivo
-    safeName = FolderAndFileManipulator.SanitizeFileName(fileName)
+    
+    ' Verifica se o nome do arquivo é válido
+    safeName = FolderAndFileManipulator.SanitizeFileName(fileName) ' Sanitiza o nome do arquivo
     If LenB(safeName) = 0 Then
+        ITemplateProcessor_ResetTemplate
         Err.Raise ERR_SAVE_FILE_FAILED, CLASS_NAME & ".Export", "Nome de arquivo inválido."
     End If
 
@@ -239,19 +227,18 @@ Private Function ITemplateProcessor_Export( _
     On Error GoTo ErrHandler
 
     ' Decide o formato de saída
-    Select Case FlTp
+    Select Case fileType
 
         ' Exportação como DOCX
-        Case DOCX
-            outPath = FolderAndFileManipulator.BuildPath(targetFolderPath, safeName, "docx")
-            FolderAndFileManipulator.EnsureOverwrite outPath
-            wordDoc.SaveAs2 fileName:=outPath, FileFormat:=word.WdSaveFormat.wdFormatXMLDocument
+        Case flDOCX
+            outPath = FolderAndFileManipulator.BuildPath(targetFolderPath, safeName, "docx")  ' Monta o caminho do arquivo que será exportado
+            FolderAndFileManipulator.EnsureOverwrite outPath ' Se existir, remove arquivo antes de salvar/exportar
+            wordDoc.SaveAs2 fileName:=outPath, FileFormat:=word.WdSaveFormat.wdFormatXMLDocument ' Exporta o arquivo
 
         ' Exportação como PDF
-        Case pdf
+        Case flPDF
             outPath = FolderAndFileManipulator.BuildPath(targetFolderPath, safeName, "pdf")
             FolderAndFileManipulator.EnsureOverwrite outPath
-
             wordDoc.ExportAsFixedFormat _
                 OutputFileName:=outPath, _
                 ExportFormat:=word.WdExportFormat.wdExportFormatPDF, _
@@ -265,33 +252,38 @@ Private Function ITemplateProcessor_Export( _
                 DocStructureTags:=True, _
                 BitmapMissingFonts:=True, _
                 UseISO19005_1:=False
-
-        Case Else
-            Err.Raise ERR_INVALID_FILE_TYPE, CLASS_NAME & ".Export", "Tipo de exportação inválido."
+            
     End Select
 
     ' Retorna o caminho do arquivo gerado
     ITemplateProcessor_Export = outPath
 
     ' Fecha o documento para liberar memória
-    CloseWordDoc
+    ITemplateProcessor_ResetTemplate
     Exit Function
 
 ' Tratamento de erro
 ErrHandler:
-    CloseWordDoc
+    ITemplateProcessor_ResetTemplate
     Err.Raise ERR_SAVE_FILE_FAILED, CLASS_NAME & ".Export", _
               "Falha ao salvar arquivo: " & Err.Description
 End Function
 
-' Reseta o documento carregado
+' Fecha o documento atual (se existir)
 Private Sub ITemplateProcessor_ResetTemplate()
-    CloseWordDoc
+    If Not wordDoc Is Nothing Then
+        wordDoc.Close SaveChanges:=False
+        Set wordDoc = Nothing
+    End If
 End Sub
 
-' Finaliza o processamento e fecha o Word
+' ' Finaliza completamente a instância do Word
 Private Sub ITemplateProcessor_Finish()
-    CloseWordApp
+    ITemplateProcessor_ResetTemplate
+    If Not wordApp Is Nothing Then
+        wordApp.Quit SaveChanges:=False     ' Fecha o Word sem salvar nada
+        Set wordApp = Nothing               ' Libera memória
+    End If
 End Sub
 
 '============================= Helpers privados =============================
@@ -312,7 +304,7 @@ Private Sub ReplaceKeys(ByVal keysValues As Scripting.Dictionary, ByVal replacem
     Exit Sub
 
 ErrHandler:
-    CloseWordDoc
+    ITemplateProcessor_ResetTemplate
     Err.Raise ERR_WRITE_FILE_FAILED, CLASS_NAME & ".ReplaceKeys", _
               "Erro ao substituir chaves no template: " & Err.Description
 End Sub
@@ -344,7 +336,6 @@ Private Sub ReplaceKeysInContent(ByVal keysValues As Scripting.Dictionary)
                     .Execute Replace:=word.WdReplace.wdReplaceAll
                 End If
             End If
-
         Next key
     End With
 End Sub

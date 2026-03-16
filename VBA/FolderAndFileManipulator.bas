@@ -74,7 +74,7 @@ End Sub
 ' Retorna a extensão do arquivo
 Function GetFileExtension(filePath As String) As String
     Dim fso As New Scripting.FileSystemObject
-    GetFileExtension = LCase(fso.GetExtensionName(filePath))
+    GetFileExtension = LCase$(fso.GetExtensionName(filePath))
 End Function
 
 ' Verifica se a pasta existe
@@ -82,28 +82,6 @@ Public Function FolderExists(folderPath As String) As Boolean
     Dim fso As Scripting.FileSystemObject
     Set fso = New Scripting.FileSystemObject
     FolderExists = fso.FolderExists(folderPath)
-End Function
-
-' Remove caracteres inválidos em nomes de arquivo do Windows
-Public Function SanitizeFileName(ByVal fileName As String) As String
-    Dim invalid As Variant, ch As Variant
-    
-    invalid = Array("\", "/", ":", "*", "?", """", "<", ">", "|")
-    SanitizeFileName = fileName
-    
-    For Each ch In invalid
-        SanitizeFileName = Replace(SanitizeFileName, CStr(ch), "_")
-    Next ch
-    
-    ' (opcional) aparar espaços e pontos finais
-    SanitizeFileName = Trim$(SanitizeFileName)
-    Do While Len(SanitizeFileName) > 0 And (Right$(SanitizeFileName, 1) = "." Or Right$(SanitizeFileName, 1) = " ")
-        SanitizeFileName = Left$(SanitizeFileName, Len(SanitizeFileName) - 1)
-    Loop
-    
-    If LenB(SanitizeFileName) = 0 Then
-        SanitizeFileName = "arquivo"
-    End If
 End Function
 
 ' Monta path unindo pasta + nome sem extensão + ponto + extensão
@@ -137,10 +115,8 @@ End Function
 
 ' Se existir, remove arquivo antes de salvar/exportar
 Public Sub EnsureOverwrite(ByVal fullPath As String)
-    On Error Resume Next
     If FolderAndFileManipulator.FileExists(fullPath) Then
         VBA.Kill fullPath
     End If
-    On Error GoTo 0
 End Sub
 

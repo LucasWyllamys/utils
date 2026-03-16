@@ -78,7 +78,7 @@ Attribute VB_Exposed = False
 '        recipient:="destinatario@exemplo.com", _
 '        subject:="Assunto do E-mail", _
 '        keysValues:=chaveValor, _
-'        filePaths:=caminhosAnexos, _
+'        attachmentPaths:=caminhosAnexos, _
 '        showBeforeSend:=False
 '
 '
@@ -314,7 +314,7 @@ Public Sub SendEmail( _
         Optional ByVal hiddenCopy As String = "", _
         Optional ByVal htmlEmailBody As String = "", _
         Optional ByVal keysValues As Scripting.Dictionary = Nothing, _
-        Optional ByVal filePaths As Collection = Nothing, _
+        Optional ByVal attachmentPaths As Collection = Nothing, _
         Optional ByVal showBeforeSend As Boolean = False)
 
     On Error GoTo EH
@@ -330,7 +330,7 @@ Public Sub SendEmail( _
     BuildEmailBody htmlEmailBody, keysValues, showBeforeSend
 
     '--- Anexos
-    If Not filePaths Is Nothing Then AddAttachments filePaths
+    If Not attachmentPaths Is Nothing Then AddAttachments attachmentPaths
 
     '--- Envio
     If showBeforeSend Then
@@ -345,7 +345,7 @@ EH:
     Err.Raise ERR_EMAIL_SEND_FAILED, "OutlookTemplateMailer.SendEmail", Err.Description
 End Sub
 
-Public Sub CleanTemplate()
+Public Sub ResetTemplate()
     templatePath = ""
     templateType = ""
     htmlContent = ""
